@@ -55,6 +55,10 @@ uint8_t TrackerStatus;
 float distance_master = -1;
 float radius = 10.0;
 
+int tagIDs[] = {1,2,3,4,5};
+int tagIDsLength =  sizeof(tagIDs) / sizeof(int);
+int tagItter = 0;
+
 #define DEBUG
 
 void setup() {  
@@ -91,9 +95,23 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate);
-  RequestStation = 123;
+  RequestStation = tagIDs[tagItter];
 
-  if (sendRequest(RequestStation, 5, RequestRanging))                     //send request for station 123, make 5 attempts
+  if(sendRequest(RequestStation, 1, RequestShock)){ //Call the sendRequest function. These calls are the backbone of
+                                                    // the code.
+      Serial.println(F("Valid ACK received"));
+#ifdef DEBUG
+      packet_is_OK();
+#endif
+      Serial.println();
+      //note that RequestStation = the ranging address
+   }
+
+  //Everytime we want to send a new request we need to reset the radio  
+  LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate);
+  RequestStation = tagIDs[tagItter];
+
+  if (sendRequest(RequestStation, 1, RequestRanging))                     //send request for station 123, make 1 attempt
   {
     Serial.println(F("Valid ACK received"));
 #ifdef DEBUG
@@ -112,11 +130,12 @@ void loop() {
   Serial.println(distance_master);
 
   LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate);
-  RequestStation = 123;
+  RequestStation = tagIDs[tagItter];
 
+  //Some basic logic to check if the tag is inside the radius. Also anomalous measurements get returned as zero, so we catch those.
   if (distance_master<radius && distance_master>0){
     Serial.println(F("Too close!"));
-    if(sendRequest(RequestStation, 5, RequestShock)){
+    if(sendRequest(RequestStation, 1, RequestShock)){
       Serial.println(F("Valid ACK received"));
 #ifdef DEBUG
       packet_is_OK();
@@ -125,9 +144,10 @@ void loop() {
       //note that RequestStation = the ranging address
     }
   }
+  //Once the tag is back outside the perimeter we send the all clear.
   else{
     Serial.println(F("Out of perimiter"));
-    if(sendRequest(RequestStation, 5, RequestReset)){
+    if(sendRequest(RequestStation, 1, RequestReset)){
       Serial.println(F("Valid ACK received"));
 #ifdef DEBUG
       packet_is_OK();
@@ -136,9 +156,16 @@ void loop() {
       //note that RequestStation = the ranging address
     }
   }
+  //As a safety measure we reset the ditance at the end of the loop
   distance_master = -1;
-  delay(2000);
 
+  //Cycle through the tag list
+  if(tagItter == tagIDsLength-1){
+    tagItter = 0;
+  }else{
+    tagItter = tagItter+1;
+  }
+  delay(5000);//THIS IS IMPORTANT!!!
 }
 
 uint8_t sendRequest(uint8_t station, uint8_t sendcount, uint8_t requestType)
@@ -203,11 +230,15 @@ void printRequestType(uint8_t type)
   switch (type)
   {
     case 1:
-      Serial.print(F(" RequestGPSLocation"));
+      Serial.print(F(" RequestShock"));
       break;
 
     case 2:
       Serial.print(F(" RequestRanging"));
+      break;
+
+    case 3:
+      Serial.print(F(" RequestShock"));
       break;
 
     default:

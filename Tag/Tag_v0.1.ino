@@ -9,6 +9,7 @@ const uint8_t RFBUSY = 7;                       //busy pin on LoRa device
 const uint8_t DIO1 = 5;                         //DIO1 pin on LoRa device, used for sensing RX and TX done
 const uint8_t LED1 = 8;
 const uint8_t LORA_DEVICE = DEVICE_SX1280;      //we need to define the device we are using
+const uint8_t BUZZER = 2;
 
 
 //*******  Setup LoRa modem parameters here ! ***************
@@ -33,7 +34,7 @@ const float TestAltitude = 25.5;
 const uint8_t TrackerStatus = 1;                //set status bit to represent tracker GPS has fix
 
 const uint16_t NetworkID = 0x3210;              //NetworkID identifies this connection, needs to match value in transmitter
-const uint8_t ThisStation = 123;                //the number of this station for requests and ranging
+const uint8_t ThisStation = 1;                //the number of this station for requests and ranging
 
 SX128XLT LT;                                    //create a library class instance called LT
 
@@ -53,6 +54,11 @@ uint8_t Warnings = 0;
 void setup() {
   // put your setup code here, to run once:
   pinMode(LED1, OUTPUT);
+  pinMode(A2, OUTPUT);
+  digitalWrite(A2, HIGH);
+  delay(200);
+  digitalWrite(A2, LOW);
+  //analogWrite(A2, 100);
   led_Flash(2, 125);                                       //two quick LED flashes to indicate program start
 
   Serial.begin(115200);
@@ -223,12 +229,16 @@ void actionRanging(uint32_t rangingaddress)
 
 
 void actionShock(){
+  //Every time we call this we increase the number of warnings and then react acordingly. 
+  //These print statements are where the shock code will go eventually
   Serial.println(F("actionShock"));
 
   Warnings = Warnings + 1;
 
   if(Warnings == 1){
-    Serial.println(F("BEEP!"));
+    digitalWrite(A2, HIGH);
+    delay(200);
+    digitalWrite(A2, LOW);
   }
   else if(Warnings == 2){
     Serial.println(F("zap"));
@@ -236,40 +246,9 @@ void actionShock(){
   else if(Warnings == 3){
     Serial.println(F("Zap"));
   }
-  else if(Warnings == 4){
+  else if(Warnings > 3){
     Serial.println(F("ZAP"));
   }
-  
-  /*uint16_t RXPayloadCRC;
-
-  RXPayloadCRC = LT.getRXPayloadCRC(RXPacketL);       //fetch received payload crc to return with ack
-
-  LT.startWriteSXBuffer(0);                   //initialise SX buffer write at address 0
-  LT.writeUint8(RequestShock);          //identify type of request
-  LT.writeUint8(ThisStation);                 //who is the request reply from
-  LT.writeFloat(TestLatitude);                //add latitude
-  LT.writeFloat(TestLongitude);               //add longitude
-  LT.writeFloat(TestAltitude);                //add altitude
-  LT.writeUint8(TrackerStatus);               //add status byte
-  TXPayloadL = LT.endWriteSXBuffer();         //close SX buffer write
-
-  delay(ACKdelay);
-
-  digitalWrite(LED1, HIGH);
-  LT.sendSXReliableACK(0, TXPayloadL, NetworkID, RXPayloadCRC, TXpower);
-  Serial.print(F("RequestShock Replied > "));
-  Serial.print(ThisStation);
-  Serial.print(F(","));
-  Serial.print(TestLatitude, 6);
-  Serial.print(F(","));
-  Serial.print(TestLongitude, 6);
-  Serial.print(F(","));
-  Serial.print(TestAltitude, 1);
-  Serial.print(F(","));
-  Serial.print(TrackerStatus);
-  Serial.println();
-  Serial.flush();
-  digitalWrite(LED1, LOW);*/
   return true;
 }
 
