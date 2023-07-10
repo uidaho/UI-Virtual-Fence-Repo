@@ -4,7 +4,7 @@
 //Change MyID to match cow tag before downloading
 // Set debug to 0
 int MyID = 5;     //This is COW ID. Match before download
-bool debug = 1;  //Turn = 1 for berbose output
+bool debug = 0;  //Turn = 1 for verbose output
 
 
 
@@ -57,7 +57,7 @@ void loop() {
           Beep();
         }
       }
-       else if(TimerShock < millis()){
+       else if(Timer < millis()){
            Shock();
         }
       }      
@@ -67,6 +67,3 @@ void loop() {
 
 
 //LOOP/////////////////////////////////////////
-
-    
- 
