@@ -69,6 +69,7 @@ byte MaxBeeps = 5;    //Shock after this many beeps
 int MaxShocks = 999;   //No more than this many schocks
 int  Freq = 800;      //Buzzer Frequency
 int  Duty = 1000;     //Buzzer Duration
+int  Duty2 = 100;      //Buzzer duration for the speed change
 SX128XLT LT;    //LT is SX1280 object
 
 // Useful Variables that program changes internally
@@ -279,34 +280,39 @@ void SendConfirmation(String Msg){
 
 /////////////////////////////////////////////////////////////////////////////////////////////
  void Beep(){  //Duration in ms
-
-  
-    /*if (EXP == 1){
-      Timer = millis()+ 2000;
-    }
-    else if (EXP == 2){
-      Timer = millis()+3500;
-    }
-    else if (EXP == 3){
-       Timer = millis()+5000;
-    }*/
-  
-  tone(BUZZER, Freq, Duty);
-  Beeped++;
-  MsgOut = "C" + String(MyID)+ "," + String(Beeped) +"C";
-  SendConfirmation(MsgOut);
-  RecordEvent();
-  if (debug){Serial.println(MsgOut);}
-    if (EXP == 1){
-     TimerShock = millis()+ 2000;
-  }
-  else if (EXP == 2){
-     TimerShock = millis()+3500;
-  }
-  else if (EXP == 3){
-     TimerShock = millis()+5000;
-  } 
-  Timer = millis()+10000;  //placed to prevent a beep loop
+   if(EXP == 1){
+      tone(BUZZER, Freq, Duty);
+      Beeped++;
+      MsgOut = "C" + String(MyID)+ "," + String(Beeped) +"C";
+      SendConfirmation(MsgOut);
+      RecordEvent();
+      if (debug){Serial.println(MsgOut);}
+      Timer = millis()+2000;  //placed to prevent a beep loop
+   }
+   else if(EXP == 2){
+      for(unsigned long interval = 400; interval > 0; interval -= 20){
+      tone(BUZZER, Freq, Duty2);
+      delay(interval);
+      }
+      Beeped++;
+      MsgOut = "C" + String(MyID)+ "," + String(Beeped) +"C";
+      SendConfirmation(MsgOut);
+      RecordEvent();
+      if (debug){Serial.println(MsgOut);}
+      Timer = millis()+500;  //placed to allow time for cancel
+   }
+   else if(EXP == 3){
+      for(int frequency = 400; frequency <= 1000; frequency += 20){
+         tone(BUZZER, frequency, Duty2);
+         delay(Duty2);
+      }
+      Beeped++;
+      MsgOut = "C" + String(MyID)+ "," + String(Beeped) +"C";
+      SendConfirmation(MsgOut);
+      RecordEvent();
+      if (debug){Serial.println(MsgOut);}
+      Timer = millis()+500;  //placed to allow time for cancel
+   }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
