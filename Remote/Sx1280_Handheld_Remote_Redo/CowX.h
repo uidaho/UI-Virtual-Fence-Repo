@@ -76,6 +76,7 @@ SX128XLT LT;    //LT is SX1280 object
 int EXP = 0;    // Experiment #
 int Beeped = 0; //Beep Counter
 bool Cancelled = true;
+bool Paused = false;
 int ShockCounter = 1;
 
 //Program Values
@@ -253,12 +254,18 @@ void SendConfirmation(String Msg){
        
        if(CowID == MyID ){
           
-          if(lTreatment == 0 ){ 
-            Cancelled = true;
-          
+          if(lTreatment == 0 && Paused == false){ 
+             Paused = true;
+             MsgOut = "C" + String(MyID) + ",0C";
+             SendConfirmation(MsgOut);
+          }
+          else if(lTreatment == 0 && Paused == true){
+             Cancelled = true;
+             Paused = false;
           }
           else if(lTreatment > 0 and lTreatment < 4){ //EXP is between 1 and 3
             Cancelled = false;
+            Paused = false;
             EXP = lTreatment; 
           }
           
@@ -294,13 +301,24 @@ void SendConfirmation(String Msg){
          tone(BUZZER, Freq, Duty2);
          delay(interval);
       }
-      ParseMessage();
+      do{
+         ParseMessage();
+         if(debug){
+             Serial.println("Paused...");
+         }
+      } while(Paused);
+      
       if(!Cancelled){
          for(unsigned long interval = 280; interval > 160; interval -= 20){
             tone(BUZZER, Freq, Duty2);
             delay(interval);
          }
-         ParseMessage();
+         do{
+            ParseMessage();
+            if(debug){
+             Serial.println("Paused...");
+            }
+         } while(Paused);
       }
       if(!Cancelled){
          for(unsigned long interval = 160; interval > 0; interval -= 20){
@@ -320,13 +338,23 @@ void SendConfirmation(String Msg){
          tone(BUZZER, frequency, Duty2);
          delay(Duty2);
       }
-      ParseMessage();
+       do{
+            ParseMessage();
+            if(debug){
+             Serial.println("Paused...");
+            }
+         } while(Paused);
       if(!Cancelled){
          for(int frequency = 600; frequency <= 800; frequency += 20){
             tone(BUZZER, frequency, Duty2);
             delay(Duty2);
          }
-         ParseMessage();
+          do{
+            ParseMessage();
+            if(debug){
+             Serial.println("Paused...");
+            }
+         } while(Paused);
       }
       if(!Cancelled){
          for(int frequency = 800; frequency <= 1000; frequency += 20){
