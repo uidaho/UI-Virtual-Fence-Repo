@@ -1,8 +1,11 @@
 //Dev Shrestha, Andrew Carefoot
-//Date Modified 6/16/2023
+//Date Modified 7/11/2023
 // This is a working Code
 //Change MyID to match cow tag before downloading
 // Set debug to 0
+/*This code has broken down the beep function into multiple functions.
+This was done by request from the animal team to allow for a pause in the beep.
+By breaking the different beeps into parts and checking for a cancel signal in between.*/
 int MyID = 5;     //This is COW ID. Match before download
 bool debug = 0;  //Turn = 1 for verbose output
 
@@ -53,7 +56,7 @@ void loop() {
       }
     else{
       if(ShockCounter <= MaxShocks and millis() > Timer){
-        if (Beeped <= MaxBeeps){  //Need to use >= becasue beep is reset to 0 and increments only after beeping
+        if (Beeped <= MaxBeeps){  //Need to use <= because beep is reset to 0 and increments only after beeping
           Beep();
         }
       }
@@ -67,3 +70,6 @@ void loop() {
 
 
 //LOOP/////////////////////////////////////////
+
+    
+ 
