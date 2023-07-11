@@ -289,10 +289,24 @@ void SendConfirmation(String Msg){
       if (debug){Serial.println(MsgOut);}
       Timer = millis()+2000;  //placed to prevent a beep loop
    }
-   else if(EXP == 2){
-      for(unsigned long interval = 400; interval > 0; interval -= 20){
-      tone(BUZZER, Freq, Duty2);
-      delay(interval);
+   else if(EXP == 2){  //This code block is written inefficiently on purpose to maintain timing constraints.
+      for(unsigned long interval = 400; interval > 280; interval -= 20){
+         tone(BUZZER, Freq, Duty2);
+         delay(interval);
+      }
+      ParseMessage();
+      if(!Cancelled){
+         for(unsigned long interval = 280; interval > 160; interval -= 20){
+            tone(BUZZER, Freq, Duty2);
+            delay(interval);
+         }
+         ParseMessage();
+      }
+      if(!Cancelled){
+         for(unsigned long interval = 160; interval > 0; interval -= 20){
+            tone(BUZZER, Freq, Duty2);
+            delay(interval);
+         }
       }
       Beeped++;
       MsgOut = "C" + String(MyID)+ "," + String(Beeped) +"C";
@@ -302,9 +316,23 @@ void SendConfirmation(String Msg){
       Timer = millis()+500;  //placed to allow time for cancel
    }
    else if(EXP == 3){
-      for(int frequency = 400; frequency <= 1000; frequency += 20){
+      for(int frequency = 400; frequency <= 600; frequency += 20){
          tone(BUZZER, frequency, Duty2);
          delay(Duty2);
+      }
+      ParseMessage();
+      if(!Cancelled){
+         for(int frequency = 600; frequency <= 800; frequency += 20){
+            tone(BUZZER, frequency, Duty2);
+            delay(Duty2);
+         }
+         ParseMessage();
+      }
+      if(!Cancelled){
+         for(int frequency = 800; frequency <= 1000; frequency += 20){
+            tone(BUZZER, frequency, Duty2);
+            delay(Duty2);
+         }
       }
       Beeped++;
       MsgOut = "C" + String(MyID)+ "," + String(Beeped) +"C";
