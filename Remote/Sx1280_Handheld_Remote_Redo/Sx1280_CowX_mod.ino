@@ -47,7 +47,6 @@ void loop() {
  if (ParseMessage() or !Cancelled){  //If there is a new message or not in Cancelled state. Cancelled is also updated in Parsemessage.
     if (Cancelled){
       if (debug){Serial.println(F("Shock cancelled! "));}
-           
       MsgOut = "C" + String(MyID) + ",0C";
       SendConfirmation(MsgOut);
       Beeped = 0;
