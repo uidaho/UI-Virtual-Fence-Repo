@@ -70,6 +70,8 @@ String cmd = "";
 byte Editing = 0;
 bool Active = false;  //True is shock button is pressed until it is cancelled or 5 shocks have occured
 bool CancelPressed = false;
+bool Paused = false;
+bool ResumePressed = false;
 
 
 long debouncing_time = 15; //Debouncing Time in Milliseconds
@@ -132,6 +134,15 @@ void CancelFun(){ //Interrupt Handler
   last_interrupt_time = interrupt_time;
 }
 
+void ResumeFun(){
+   static unsigned long last_interrupt_time = 0;
+   unsigned long interrupt_time = millis();
+   // If interrupts come faster than 200ms, assume it's a bounce and ignore
+   if (interrupt_time - last_interrupt_time > 200) {
+      ResumePressed = true;
+   }
+   last_interrupt_time = interrupt_time;
+}
 //Update LCD
 void LCDUpdate(byte x){
   if (x==0){
@@ -212,6 +223,10 @@ void EditSettings(){
   if(debug) {Serial.println("Green off");}
   digitalWrite(BlueLED,HIGH); //Entering editing mode
   if(debug){Serial.println("Blue on");}
+  unsigned int long last_pressed_right = 0;
+  unsigned int long last_pressed_left = 0;
+  unsigned int long last_pressed_up = 0;
+  unsigned int long last_pressed_down = 0;
 
   while (CancelPressed == false){
     if(digitalRead(RightButton) == LOW){
@@ -219,34 +234,49 @@ void EditSettings(){
       if(debug){
         Serial.println("right:");
       }
+      int long pressed_right = millis();
+      if(pressed_right - last_pressed_right > 200){
       Editing = min(2,Editing+1);
       LCDMark(Editing);
       delay(100);
+      }
+      last_pressed_right = pressed_right;
     } // Maximum editing is 2
     else if(digitalRead(LeftButton) == LOW){
       //JoyLeft = false;
       if(debug){
         Serial.println("Left:");
       }
+      int long pressed_left = millis();
+      if(pressed_left - last_pressed_left > 200){
       Editing =max(1,Editing-1);
       LCDMark(Editing);
       delay(100);
+      }
+      last_pressed_left = pressed_left;
     } // Minimum editing is 1
     else if(digitalRead(UpButton) == LOW) {
       //JoyUp = false;
       if(debug){
         Serial.println("up:");
       }
+      int long pressed_up = millis();
+      if(pressed_up - last_pressed_up > 200){
       Increment(Editing);
       delay(100);
+      }
+      last_pressed_up = pressed_up;
     } //Increment the setting based on Editing
     else if(digitalRead(DownButton) == LOW) {
       //JoyDown = false;
       if(debug){
         Serial.println("down:");
       }
+      int long pressed_down = millis();
+      if(pressed_down - last_pressed_down > 200){
       Decrement(Editing);
       delay(100);
+      }
     }
     else{}
   }
