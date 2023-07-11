@@ -8,7 +8,7 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);//https://www.arduino.cc/reference/en/libraries/liquidcrystal-i2c/
 SX128XLT LT; 
 
-bool debug = true;
+bool debug = 0;
 
 
 #include "Vfence.h"
@@ -39,9 +39,11 @@ void setup() {
   LT.setupLoRa(2445000000, 0, LORA_SF7, LORA_BW_0400, LORA_CR_4_5);      //configure frequency and LoRa settings
   if (debug){Serial.println(F("Radio initialized at: 2.445 GHz, SF07"));}
   attachInterrupt(digitalPinToInterrupt(CancelButton),CancelFun,LOW);
+  attachInterrupt(digitalPinToInterrupt(ShockButton), ResumeFun, LOW);
 }
 //LOOP/////////////////////////////////////////
 void loop() {
+  ResumePressed = false;
   Active = !digitalRead(ShockButton) && (Editing < 1);
   if (Active){
     MsgOut = "B" + String(AID)+ "," + String (EXP) +"B";
@@ -50,6 +52,15 @@ void loop() {
     while (Active){
       if (CancelPressed){
         CancelShock();
+      }
+      if (ResumePressed){
+         MsgOut = "B" + String(AID)+ "," + String (EXP) +"B";
+         Broadcast(MsgOut);
+         Paused = false;
+         ResumePressed = false;
+         if(debug){
+          Serial.println("Resumed");
+         }
       }
       if (ParseMessage()){  //ParseMessage returns true only if valid message is received from matching AID
         if (BeepCounter==0){
@@ -100,9 +111,15 @@ void CancelShock(){
     }
   }
   CancelPressed = false;
-  Active = false;
-  digitalWrite(GreenLED, HIGH);
-  digitalWrite(RedLED, LOW);
+  if(Paused == true){
+     Paused = false;
+     Active = false;
+     digitalWrite(GreenLED, HIGH);
+     digitalWrite(RedLED, LOW);
+  }
+  else if(Paused == false){
+     Paused = true;
+  }
 }
 ////////////////////////////////////
 
