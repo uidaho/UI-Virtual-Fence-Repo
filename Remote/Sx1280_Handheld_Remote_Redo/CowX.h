@@ -295,6 +295,7 @@ void SendConfirmation(String Msg){
       RecordEvent();
       if (debug){Serial.println(MsgOut);}
       Timer = millis()+2000;  //placed to prevent a beep loop
+      TimerShock = millis()+5000;
    }
    else if(EXP == 2){  //This code block is written inefficiently on purpose to maintain timing constraints.
       for(unsigned long interval = 400; interval > 280; interval -= 20){
@@ -332,6 +333,7 @@ void SendConfirmation(String Msg){
       RecordEvent();
       if (debug){Serial.println(MsgOut);}
       Timer = millis()+500;  //placed to allow time for cancel
+      TimerShock = millis()+5000;
    }
    else if(EXP == 3){
       for(int frequency = 400; frequency <= 600; frequency += 20){
@@ -368,6 +370,7 @@ void SendConfirmation(String Msg){
       RecordEvent();
       if (debug){Serial.println(MsgOut);}
       Timer = millis()+500;  //placed to allow time for cancel
+      TimerShock = millis()+5000;
    }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -396,8 +399,8 @@ void Shock(){
   delay(Duration);                // wait Duration
   digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
   digitalWrite(CHARGE, LOW);
-  Timer = millis()+5000;
-  TimerShock = millis()+10000;   // This is here so the board doesnt get caught in a shock loop
+  Timer = millis()+10000;
+  TimerShock = millis()+5000;   // This is here so the board doesnt get caught in a shock loop
   //Beeped++;
   //MsgOut = "C" + String(MyID)+ "," + String(Beeped)+ "C";
   //SendConfirmation(MsgOut);

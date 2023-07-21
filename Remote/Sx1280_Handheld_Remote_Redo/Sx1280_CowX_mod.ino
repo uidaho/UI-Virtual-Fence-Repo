@@ -6,7 +6,7 @@
 /*This code has broken down the beep function into multiple functions.
 This was done by request from the animal team to allow for a pause in the beep.
 By breaking the different beeps into parts and checking for a cancel signal in between.*/
-int MyID = 5;     //This is COW ID. Match before download
+int MyID = 1;     //This is COW ID. Match before download
 bool debug = 0;  //Turn = 1 for verbose output
 
 
@@ -51,19 +51,22 @@ void loop() {
       SendConfirmation(MsgOut);
       Beeped = 0;
       RecordEvent();
-      
       }
+    else if(Paused){
+      ParseMessage();
+    }
     else{
-      if(ShockCounter <= MaxShocks and millis() > Timer){
+      if(ShockCounter <= MaxShocks && TimerShock <= millis()){
         if (Beeped <= MaxBeeps){  //Need to use <= because beep is reset to 0 and increments only after beeping
           Beep();
         }
       }
-       else if(Timer < millis()){
+       else if(Timer <= millis()){
+           if(debug){Serial.println("Shocking!");}
            Shock();
         }
-      }      
-    }
+      }
+   }
 }
 
 
