@@ -17,8 +17,8 @@ const uint32_t Frequency = 2445000000;          //frequency of transmissions
 const uint32_t Offset = 0;                      //offset frequency for calibration purposes
 const int8_t  TXpower = 2;                      //LoRa transmit power
 const int8_t RangingTXPower = 10;               //Transmit power used for ranging
-const uint8_t Bandwidth = LORA_BW_0800;         //LoRa bandwidth
-const uint8_t SpreadingFactor = LORA_SF8;       //LoRa spreading factor
+const uint8_t Bandwidth = LORA_BW_0400;         //LoRa bandwidth
+const uint8_t SpreadingFactor = LORA_SF6;       //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;           //LoRa coding rate
 const uint32_t ACKdelay = 200;                  //delay in mS before sending reply                      
 const uint32_t RXtimeout = 5000;                //receive timeout in mS.
@@ -278,6 +278,9 @@ void actionRanging(uint32_t rangingaddress)
 
 
 void actionShock(){
+  digitalWrite(A2, HIGH);
+  delay(200);
+  digitalWrite(A2, LOW);
   //Set Potentiometer
   byte PotR = 10 - 2*SIntensity;
   word PotVal = getPot(0);
