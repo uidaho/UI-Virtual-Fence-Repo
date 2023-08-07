@@ -14,8 +14,8 @@ const uint8_t LED1 = 8;
 const uint32_t Frequency = 2445000000;          //frequency of transmissions
 const uint32_t Offset = 0;                      //offset frequency for calibration purposes
 const int8_t  TXpower = 2;                      //LoRa transmit power
-const uint8_t Bandwidth = LORA_BW_0800;         //LoRa bandwidth
-const uint8_t SpreadingFactor = LORA_SF8;       //LoRa spreading factor
+const uint8_t Bandwidth = LORA_BW_0400;         //LoRa bandwidth
+const uint8_t SpreadingFactor = LORA_SF6;       //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;           //LoRa coding rate
 
 
@@ -28,12 +28,12 @@ const uint32_t ACKtimeout = 1000;               //Acknowledge timeout in mS, set
 const uint32_t TXtimeout = 1000;                //transmit timeout in mS. If 0 return from transmit function after send.
 
 const int8_t RangingTXPower = 10;               //Ranging transmit power used
-const uint16_t  RangingTimeoutmS = 1000;        //ranging master timeout in mS, time master waits for a reply
-const uint16_t  RangingUpTimemS = 2000;         //time for slave to stay in ranging listen
+const uint16_t  RangingTimeoutmS = 100;        //ranging master timeout in mS, time master waits for a reply
+const uint16_t  RangingUpTimemS = 100;         //time for slave to stay in ranging listen
 const uint16_t  PacketDelaymS = 0;              //forced extra delay in mS between sending packets
 const uint16_t  RangingCount = 3;               //number of times ranging is carried out for each distance measurment
 const float DistanceAdjustment = 1.0000;        //adjustment factor to calculated distance
-const uint16_t Calibration = 11350;             //Manual Ranging calibration value
+const uint16_t Calibration = 10244;             //Manual Ranging calibration value
 
 SX128XLT LT;                                    //create a library class instance called LT
 
@@ -131,7 +131,7 @@ void loop() {
   Serial.print(F("Distance Master: "));
   Serial.println(distance_master);
 
-  delay(2000);
+  delay(RangingUpTimemS);
 
   LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate);
   RequestStation = tagIDs[tagItter];
@@ -169,7 +169,7 @@ void loop() {
   }else{
     tagItter = tagItter+1;
   }
-  delay(5000);//THIS IS IMPORTANT!!!
+  //delay(5000);//THIS IS IMPORTANT!!!
 }
 
 uint8_t sendRequest(uint8_t station, uint8_t sendcount, uint8_t requestType)
@@ -234,7 +234,7 @@ void printRequestType(uint8_t type)
   switch (type)
   {
     case 1:
-      Serial.print(F(" RequestShock"));
+      Serial.print(F(" RequestReset"));
       break;
 
     case 2:
