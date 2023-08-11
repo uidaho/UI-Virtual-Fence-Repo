@@ -278,9 +278,6 @@ void actionRanging(uint32_t rangingaddress)
 
 
 void actionShock(){
-  digitalWrite(A2, HIGH);
-  delay(200);
-  digitalWrite(A2, LOW);
   //Set Potentiometer
   byte PotR = 10 - 2*SIntensity;
   word PotVal = getPot(0);
