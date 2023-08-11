@@ -13,8 +13,8 @@ const uint8_t LED1 = 8;
 //*******  Setup LoRa modem parameters here ! ***************
 const uint32_t Frequency = 2445000000;          //frequency of transmissions
 const uint32_t Offset = 0;                      //offset frequency for calibration purposes
-const int8_t  TXpower = 2;                      //LoRa transmit power
-const uint8_t Bandwidth = LORA_BW_0400;         //LoRa bandwidth
+const int8_t  TXpower = 10;                      //LoRa transmit power
+const uint8_t Bandwidth = LORA_BW_1600;         //LoRa bandwidth
 const uint8_t SpreadingFactor = LORA_SF6;       //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;           //LoRa coding rate
 
@@ -24,16 +24,16 @@ const uint8_t RequestReset = 1;                 //request type number for reset
 const uint8_t RequestRanging = 2;               //request type number for ranging
 const uint8_t RequestShock = 3;                 //request type number for shock
 
-const uint32_t ACKtimeout = 1000;               //Acknowledge timeout in mS, set to 0 if ACK not used.
+const uint32_t ACKtimeout = 300;               //Acknowledge timeout in mS, set to 0 if ACK not used.
 const uint32_t TXtimeout = 1000;                //transmit timeout in mS. If 0 return from transmit function after send.
 
 const int8_t RangingTXPower = 10;               //Ranging transmit power used
-const uint16_t  RangingTimeoutmS = 100;        //ranging master timeout in mS, time master waits for a reply
-const uint16_t  RangingUpTimemS = 100;         //time for slave to stay in ranging listen
+const uint16_t  RangingTimeoutmS = 300;        //ranging master timeout in mS, time master waits for a reply
+const uint16_t  RangingUpTimemS = 300;         //time for slave to stay in ranging listen
 const uint16_t  PacketDelaymS = 0;              //forced extra delay in mS between sending packets
-const uint16_t  RangingCount = 3;               //number of times ranging is carried out for each distance measurment
+const uint16_t  RangingCount = 5;               //number of times ranging is carried out for each distance measurment
 const float DistanceAdjustment = 1.0000;        //adjustment factor to calculated distance
-const uint16_t Calibration = 10244;             //Manual Ranging calibration value
+const uint16_t Calibration = 13160;             //Manual Ranging calibration value
 
 SX128XLT LT;                                    //create a library class instance called LT
 
@@ -53,9 +53,9 @@ float Altitude;
 uint8_t TrackerStatus;
 
 float distance_master = -1;
-float radius = 20.0;
+float radius = 30.0;
 
-int tagIDs[] = {1};
+int tagIDs[] = {1,2};
 int tagIDsLength =  sizeof(tagIDs) / sizeof(int);
 int tagItter = 0;
 
