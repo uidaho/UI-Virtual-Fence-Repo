@@ -3,7 +3,7 @@
 
 //*******  Setup hardware pin definitions here ! ***************
 
-const uint8_t NSS = 10;                         //select pin on LoRa device
+const uint8_t NSS = 10;                         //select pin on LoRa devicem
 const uint8_t NRESET = 9;                       //reset pin on LoRa device
 const uint8_t RFBUSY = 7;                       //busy pin on LoRa device
 const uint8_t DIO1 = 5;                         //DIO1 pin on LoRa device, used for sensing RX and TX done
@@ -15,12 +15,12 @@ const uint8_t BUZZER = 2;
 //*******  Setup LoRa modem parameters here ! ***************
 const uint32_t Frequency = 2445000000;          //frequency of transmissions
 const uint32_t Offset = 0;                      //offset frequency for calibration purposes
-const int8_t  TXpower = 2;                      //LoRa transmit power
+const int8_t  TXpower = 10;                      //LoRa transmit power
 const int8_t RangingTXPower = 10;               //Transmit power used for ranging
-const uint8_t Bandwidth = LORA_BW_0400;         //LoRa bandwidth
+const uint8_t Bandwidth = LORA_BW_1600;         //LoRa bandwidth
 const uint8_t SpreadingFactor = LORA_SF6;       //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;           //LoRa coding rate
-const uint32_t ACKdelay = 200;                  //delay in mS before sending reply                      
+const uint32_t ACKdelay = 100;                  //delay in mS before sending reply                      
 const uint32_t RXtimeout = 5000;                //receive timeout in mS.
 
 const uint8_t RequestReset = 1;                 //request type number for reset
@@ -34,7 +34,7 @@ const float TestAltitude = 25.5;
 const uint8_t TrackerStatus = 1;                //set status bit to represent tracker GPS has fix
 
 const uint16_t NetworkID = 0x3210;              //NetworkID identifies this connection, needs to match value in transmitter
-const uint8_t ThisStation = 1;                //the number of this station for requests and ranging
+const uint8_t ThisStation = 2;                //the number of this station for requests and ranging
 
 SX128XLT LT;                                    //create a library class instance called LT
 
