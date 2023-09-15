@@ -1,5 +1,5 @@
 struct Point {
-  int x, y;
+  float x, y;
 };
 
 struct Line {
@@ -9,13 +9,15 @@ struct Line {
 void setup() {
   Serial.begin(115200);
   // put your setup code here, to run once:
-  Point polygon[] = { { 0, 0 }, { 10, 0 }, { 10, 10 }, { 0, 10 } };
-  Point p[] = {{ 5, 3 },{11,11},{-5,-5},{10,10}};
+  Point polygon[] = { { 0.0, 0.0 }, { 10.0, 0.0 }, { 10.0, 10.0 }, { 0.0, 10.0 } };
+  Point polygon2[] = {{7.0,5.0},{12.0,5.0},{15.0,10.0},{10.0,13.0},{5.0,10.0}};
+  Point polygon3[] = {{0,5},{5,0},{-5,0},{0,-5}};
+  Point p[] = {{1,1},{0,0},{-1,-1},{-1,5},{-6,0}};
   int n = 4;
  
   // Function call
-  for(int i = 0; i<4; i++){
-    if (checkInside(polygon, n, p[i]))
+  for(int i = 0; i<5; i++){
+    if (checkInside(polygon3, n, p[i]))
       Serial.println("Point is inside.");
     else
       Serial.println("Point is outside.");
@@ -42,7 +44,7 @@ bool onLine(Line l1, Point p)
 
 int direct(Point a, Point b, Point c)
 {
-    int val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
+    float val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
  
     if (val == 0)
  
@@ -61,10 +63,10 @@ int direct(Point a, Point b, Point c)
 bool isIntersect(Line l1, Line l2)
 {
     // Four direction for two lines and points of other line
-    int dir1 = direct(l1.p1, l1.p2, l2.p1);
-    int dir2 = direct(l1.p1, l1.p2, l2.p2);
-    int dir3 = direct(l2.p1, l2.p2, l1.p1);
-    int dir4 = direct(l2.p1, l2.p2, l1.p2);
+    float dir1 = direct(l1.p1, l1.p2, l2.p1);
+    float dir2 = direct(l1.p1, l1.p2, l2.p2);
+    float dir3 = direct(l2.p1, l2.p2, l1.p1);
+    float dir4 = direct(l2.p1, l2.p2, l1.p2);
  
     // When intersecting
     if (dir1 != dir2 && dir3 != dir4)

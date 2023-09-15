@@ -12,7 +12,7 @@ float points[5][2] = {{1,1},{0,0},{10,10},{10,0},{15,15}};
 
 Point pt_polygon_1[5] = {{7,5},{12,5},{15,10},{10,13},{5,10}};
 Point pt_polygon_2[13] = {{5,5},{10,-5},{15,5},{15,10},{20,10},{20,15},{15,20},{10,15},{5,20},{0,15},{10,10},{0,10}};
-Point pt_points[5] = {{1,1},{0,0},{10,10},{10,0},{15,15}};
+Point pt_points[5] = {{1,1},{0,0},{10,10},{10,0},{17,12}};
 
 float minDist = 100;
 float dist = 101;
@@ -106,7 +106,7 @@ float polygon_calc(Point poly[], int poly_size, Point pt){
 
     float r = dotProduct(edge, pt_to_1);
 
-    r = r/((magnitude(edge)) * 2);
+    r = r/((magnitude(edge)) * (magnitude(edge)));
 
     if (r<0){
       dist = magnitude(pt_to_1);
