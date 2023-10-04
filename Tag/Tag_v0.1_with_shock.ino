@@ -35,7 +35,7 @@ const float TestAltitude = 25.5;
 const uint8_t TrackerStatus = 1;                //set status bit to represent tracker GPS has fix
 
 const uint16_t NetworkID = 0x3210;              //NetworkID identifies this connection, needs to match value in transmitter
-const uint8_t ThisStation = 1;                //the number of this station for requests and ranging
+const uint8_t ThisStation = 9;                //the number of this station for requests and ranging
 
 SX128XLT LT;                                    //create a library class instance called LT
 
@@ -51,8 +51,9 @@ uint8_t Warnings = 0;
 int Duration = 40;
 byte SIntensity =1;
 
-int shockNum = 0;
-int shockAddress = 0;
+//int shockNum = 0;
+int pointAddress = 0;
+int memPointer = 1;
 
 #define DEBUG
 #define SHOCK 6
@@ -106,12 +107,17 @@ void setup() {
   Serial.print("CRC32 of EEPROM data: 0x");
   Serial.println(eeprom_crc(), HEX);
 
-  Serial.print("Previous Shock Number: "); //print the number of shocks the tag gave lattime it was initialized
+  //set pointer address to value in 0th regiter
+  EEPROM.get(pointAddress, memPointer);
+  
+  EEPROM.put(pointAddress, memPointer);
+
+  /*Serial.print("Previous Shock Number: "); //print the number of shocks the tag gave lattime it was initialized
   EEPROM.get(shockAddress, shockNum);
   Serial.println(shockNum, 3);
 
   shockNum = 0;  //reset the number of shocks for this run
-  EEPROM.put(shockAddress, shockNum); // save the reset shockNum
+  EEPROM.put(shockAddress, shockNum); // save the reset shockNum*/
   
 }
 
@@ -321,8 +327,14 @@ void actionShock(){
   digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
   digitalWrite(CHARGE, LOW);
 
-  shockNum += 1;
-  EEPROM.put(shockAddress, shockNum);
+  /*shockNum += 1;
+  EEPROM.put(shockAddress, shockNum);*/
+  //record the millis to the register pointed to by memPointer
+  //increment the memPointer by one and save
+
+  EEPROM.put(memPointer, millis());
+  memPointer += 1;
+  EEPROM.put(pointAddress, memPointer);
   
   return true;
 }
