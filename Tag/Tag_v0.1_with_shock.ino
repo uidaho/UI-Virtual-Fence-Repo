@@ -331,9 +331,18 @@ void actionShock(){
   EEPROM.put(shockAddress, shockNum);*/
   //record the millis to the register pointed to by memPointer
   //increment the memPointer by one and save
-
-  EEPROM.put(memPointer, millis());
-  memPointer += 1;
+  long t = millis();
+  byte four = (t & 0xFF);
+  byte three = ((t >> 8) & 0xFF);
+  byte two = ((t >> 16) & 0xFF);
+  byte one = ((t >> 24) & 0xFF);
+  
+  EEPROM.write(memPointer, four);
+  EEPROM.write(memPointer + 1, three);
+  EEPROM.write(memPointer + 2, two);
+  EEPROM.write(memPointer + 3, one);
+  
+  memPointer += 4;
   EEPROM.put(pointAddress, memPointer);
   
   return true;

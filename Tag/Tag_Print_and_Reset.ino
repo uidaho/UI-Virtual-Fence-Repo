@@ -2,8 +2,8 @@
 
 int pointAddress = 0;
 int memPointer = 1;
-byte value;
-bool reset = false;
+long value;
+bool reset = true;
 
 void setup() {
   // put your setup code here, to run once:
@@ -12,10 +12,16 @@ void setup() {
 
   EEPROM.get(pointAddress, memPointer);
   
-  for(int i=0; i<= memPointer; i++){
-    value = EEPROM.read(i);
+  for(int i=0; i<= memPointer; i += 4){
+    long four = EEPROM.read(i);
+    long three = EEPROM.read(i + 1);
+    long two = EEPROM.read(i + 2);
+    long one = EEPROM.read(i + 3);
+  
+    value = ((four << 0) & 0xFF) + ((three << 8) & 0xFFFF) + ((two << 16) & 0xFFFFFF) + ((one << 24) & 0xFFFFFFFF);
+    
 
-    Serial.print(address);
+    Serial.print(memPointer);
     Serial.print("\t");
     Serial.println(value, DEC);
     
