@@ -35,7 +35,7 @@ const float TestAltitude = 25.5;
 const uint8_t TrackerStatus = 1;                //set status bit to represent tracker GPS has fix
 
 const uint16_t NetworkID = 0x3210;              //NetworkID identifies this connection, needs to match value in transmitter
-const uint8_t ThisStation = 9;                //the number of this station for requests and ranging
+const uint8_t ThisStation = 8;                //the number of this station for requests and ranging
 
 SX128XLT LT;                                    //create a library class instance called LT
 
@@ -54,6 +54,7 @@ byte SIntensity =1;
 //int shockNum = 0;
 int pointAddress = 0;
 int memPointer = 1;
+bool memoryToggle = true;
 
 #define DEBUG
 #define SHOCK 6
@@ -336,20 +337,27 @@ void actionShock(){
   byte three = ((t >> 8) & 0xFF);
   byte two = ((t >> 16) & 0xFF);
   byte one = ((t >> 24) & 0xFF);
+
+  if (memPointer < EEPROM.length()-3){
+    if (memoryToggle){
+      EEPROM.write(memPointer, four);
+      EEPROM.write(memPointer + 1, three);
+      EEPROM.write(memPointer + 2, two);
+      EEPROM.write(memPointer + 3, one);
   
-  EEPROM.write(memPointer, four);
-  EEPROM.write(memPointer + 1, three);
-  EEPROM.write(memPointer + 2, two);
-  EEPROM.write(memPointer + 3, one);
-  
-  memPointer += 4;
-  EEPROM.put(pointAddress, memPointer);
+      memPointer += 4;
+      EEPROM.put(pointAddress, memPointer);
+
+      memoryToggle = false;
+    }
+  }
   
   return true;
 }
 
 void actionReset(){
   Warnings = 0;
+  memoryToggle = true;
   return true;
 }
 
