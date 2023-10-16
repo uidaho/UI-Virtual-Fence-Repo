@@ -302,32 +302,39 @@ void actionRanging(uint32_t rangingaddress)
 }
 
 
-void actionShock(){ 
+void actionShock(){
+
+  if(Warnings > 6){
+    return;
+  }
+   
   digitalWrite(A2, HIGH);
   delay(200);
   digitalWrite(A2, LOW);
-  //Set Potentiometer
-  byte PotR = 10 - 2*SIntensity;
-  word PotVal = getPot(0);
-  while (PotVal!= PotR){
-  setPot(0, PotR);
-  if (true){
-      Serial.print(F("Set Pot: "));
-      Serial.println(PotR);
-      Serial.print(F("Get Pot: "));
-      Serial.println(PotVal);
-      delay(1000);
-  }
-    delay(10);
-    PotVal = getPot(0);
-  }
-  digitalWrite(CHARGE, HIGH);
-  delay(10);
-  digitalWrite(SHOCK, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(Duration);                // wait Duration
-  digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
-  digitalWrite(CHARGE, LOW);
 
+  if (Warnings > 1){
+    //Set Potentiometer
+    byte PotR = 10 - 2*SIntensity;
+    word PotVal = getPot(0);
+    while (PotVal!= PotR){
+      setPot(0, PotR);
+      if (true){
+        Serial.print(F("Set Pot: "));
+        Serial.println(PotR);
+        Serial.print(F("Get Pot: "));
+        Serial.println(PotVal);
+        delay(1000);
+      }
+      delay(10);
+      PotVal = getPot(0);
+    }
+    digitalWrite(CHARGE, HIGH);
+    delay(10);
+    digitalWrite(SHOCK, HIGH);   // turn the LED on (HIGH is the voltage level)
+    delay(Duration);                // wait Duration
+    digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
+    digitalWrite(CHARGE, LOW);
+  }
   /*shockNum += 1;
   EEPROM.put(shockAddress, shockNum);*/
   //record the millis to the register pointed to by memPointer
@@ -351,6 +358,8 @@ void actionShock(){
       memoryToggle = false;
     }
   }
+
+  Warnings += 1;
   
   return true;
 }
