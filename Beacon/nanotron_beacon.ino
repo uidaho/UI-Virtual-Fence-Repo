@@ -13,13 +13,13 @@ int tagIDs[][2] = {{3,0},{6,0},{7,0},{8,0},{9,0},{10,0}}; //element 0 is id, ele
 int tagIDsLength =  sizeof(tagIDs) / sizeof(int);
 int tagItter = 0;
 
-
+int blinkRate = 1000;
 
 void setup() {
   Serial.begin(115200);
   Serial3.begin(115200);
   Serial3.print("NCFG 1ff\r\n");  // Set *RRN response to include RSSI data
-  Serial3.print("SBIV 1000\r\n");  //Set host to blink every 1 second
+  Serial3.print("SBIV "+String(blinkRate)+"\r\n");  //Set host to blink every 1 second
   Serial3.print("EDNI 1\r\n"); // Activate *DNI to be able to read messagaes
 
   for(int i=0; i<tagIDsLength; i++){
@@ -37,7 +37,7 @@ void setup() {
       else if ( checks == 10){
         checks = 0;
         Serial.println("Unable to contact tag" + target);
-        checked = true'
+        checked = true;
       }
       else{
         checks++;
@@ -53,6 +53,7 @@ void loop() {
   //allows for this, we could check all tags simultaneously. As it stands now we'll check whichever
   //tag we are concerned with this cycle and discard the ranging data for the rest.
   bool ranged = false;
+  float distance;
   while(ranged == false){  
     String message = readNanoTron();
     if(message.substring()=="for tag"){
@@ -61,8 +62,18 @@ void loop() {
     }
   }
   //send command
+  if(distance < distance_master){
+    while(recieved == false){
+      String c1 = "FNIN 0A 10";
+      String target = sFill(String(tagIDs[i][0]), 12, '0');
+      String message = "111111";
+      Serial3.print(c1+target+message+"\r\n");     
+    }
+  }
   
-  //wait for responce
+  delay(blinkRate); //this guarantees that we have blinked atleast once so we don't 
+  //potentially overwrite our message before it gets read
+  //wait for response
   if(tagItter == tagIDsLength){
     tagItter = 0;
   }
@@ -82,6 +93,7 @@ String sFill(String s, int len, char fill){
 }
 
 String readNanoTron(){
+
   String nanoRead = "";
   while (Serial3.available()) {
     int bad=0;
