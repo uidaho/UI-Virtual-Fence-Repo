@@ -56,31 +56,41 @@ void loop() {
   float distance;
   while(ranged == false){  
     String message = readNanoTron();
-    if(message.substring()=="for tag"){
+    if(message.substring()==sFill(String(tagIDs[tagItter][0]), 12, '0')){
       ranged = true;
       distance = message.substring();
     }
   }
   //send command
   if(distance < distance_master){
-    while(recieved == false){
-      String c1 = "FNIN 0A 10";
-      String target = sFill(String(tagIDs[i][0]), 12, '0');
-      String message = "111111";
-      Serial3.print(c1+target+message+"\r\n");     
-    }
+    String c1 = "FNIN 0A 10";
+    String target = sFill(String(tagIDs[i][0]), 12, '0');
+    String message = "111111";
+    Serial3.print(c1+target+message+"\r\n");  
+
+    tagIDs[tagItter][1] = 1;   
+    
+  }
+  else if(distance >= distance_master && tagIDs[tagItter][1] == 1){
+    
+    String c1 = "FNIN 0A 10";
+    String target = sFill(String(tagIDs[i][0]), 12, '0');
+    String message = "000000";
+    Serial3.print(c1+target+message+"\r\n");  
+
+    tagIDs[tagItter][1] = 0; 
   }
   
   delay(blinkRate); //this guarantees that we have blinked atleast once so we don't 
   //potentially overwrite our message before it gets read
-  //wait for response
+  //wait for response -- This adds an enourmous ammount of latency to the system may 
+  //simply not do this
   if(tagItter == tagIDsLength){
     tagItter = 0;
   }
   else{
     tagItter++;
   }
-  // put your main code here, to run repeatedly:
 
 }
 
