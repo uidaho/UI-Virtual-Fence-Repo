@@ -14,8 +14,8 @@ const uint8_t LED1 = 8;
 const uint32_t Frequency = 2445000000;          //frequency of transmissions
 const uint32_t Offset = 0;                      //offset frequency for calibration purposes
 const int8_t  TXpower = 2;                      //LoRa transmit power
-const uint8_t Bandwidth = LORA_BW_0800;         //LoRa bandwidth
-const uint8_t SpreadingFactor = LORA_SF8;       //LoRa spreading factor
+const uint8_t Bandwidth = LORA_BW_0400;         //LoRa bandwidth
+const uint8_t SpreadingFactor = LORA_SF6;       //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;           //LoRa coding rate
 
 
@@ -24,16 +24,16 @@ const uint8_t RequestReset = 1;                 //request type number for reset
 const uint8_t RequestRanging = 2;               //request type number for ranging
 const uint8_t RequestShock = 3;                 //request type number for shock
 
-const uint32_t ACKtimeout = 1000;               //Acknowledge timeout in mS, set to 0 if ACK not used.
+const uint32_t ACKtimeout = 300;               //Acknowledge timeout in mS, set to 0 if ACK not used.
 const uint32_t TXtimeout = 1000;                //transmit timeout in mS. If 0 return from transmit function after send.
 
 const int8_t RangingTXPower = 10;               //Ranging transmit power used
-const uint16_t  RangingTimeoutmS = 1000;        //ranging master timeout in mS, time master waits for a reply
-const uint16_t  RangingUpTimemS = 2000;         //time for slave to stay in ranging listen
+const uint16_t  RangingTimeoutmS = 100;        //ranging master timeout in mS, time master waits for a reply
+const uint16_t  RangingUpTimemS = 100;         //time for slave to stay in ranging listen
 const uint16_t  PacketDelaymS = 0;              //forced extra delay in mS between sending packets
 const uint16_t  RangingCount = 3;               //number of times ranging is carried out for each distance measurment
 const float DistanceAdjustment = 1.0000;        //adjustment factor to calculated distance
-const uint16_t Calibration = 11350;             //Manual Ranging calibration value
+const uint16_t Calibration = 10244;             //Manual Ranging calibration value
 
 SX128XLT LT;                                    //create a library class instance called LT
 
@@ -53,9 +53,9 @@ float Altitude;
 uint8_t TrackerStatus;
 
 float distance_master = -1;
-float radius = 20.0;
+float radius = 10.0;
 
-int tagIDs[] = {1};
+int tagIDs[][2] = {{3,0},{6,0},{7,0},{8,0},{9,0},{10,0}}; //element 0 is id, element 1 is shock status (0 for not shocked, 1 for shocked)
 int tagIDsLength =  sizeof(tagIDs) / sizeof(int);
 int tagItter = 0;
 
@@ -93,10 +93,18 @@ void setup() {
 }
 
 void loop() {
+
+  unsigned long range_time = 0;
+  unsigned long request_time = 0;
+  unsigned long  loop_time_start = millis();
+  unsigned long  setup_time_start = millis();
+  
   // put your main code here, to run repeatedly:
   LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate);
-  RequestStation = tagIDs[tagItter];
- if(distance_master<radius && distance_master>0){
+  unsigned long  setup_time = millis() - setup_time_start;
+  RequestStation = tagIDs[tagItter][0];
+  
+ /*if(distance_master<radius && distance_master>0){
   if(sendRequest(RequestStation, 1, RequestShock)){ //Call the sendRequest function. These calls are the backbone of
                                                     // the code.
       Serial.println(F("Valid ACK received"));
@@ -106,12 +114,12 @@ void loop() {
       Serial.println();
       //note that RequestStation = the ranging address
    }
- }
+ }*/
  //distance_master = -1;
 
   //Everytime we want to send a new request we need to reset the radio  
   LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate);
-  RequestStation = tagIDs[tagItter];
+  RequestStation = tagIDs[tagItter][0];
 
   if (sendRequest(RequestStation, 1, RequestRanging))                     //send request for station 123, make 1 attempt
   {
@@ -121,7 +129,9 @@ void loop() {
 #endif
     Serial.println();
     //note that RequestStation = the ranging address
+    unsigned long range_time_start = millis();
     distance_master = actionRanging(RequestStation, RangingCount, RangingTimeoutmS, RangingTXPower);
+    range_time = millis() - range_time_start;
   }
   else
   {
@@ -131,45 +141,64 @@ void loop() {
   Serial.print(F("Distance Master: "));
   Serial.println(distance_master);
 
-  delay(2000);
+  delay(RangingUpTimemS);
 
   LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate);
-  RequestStation = tagIDs[tagItter];
+  RequestStation = tagIDs[tagItter][0];
 
   //Some basic logic to check if the tag is inside the radius. Also anomalous measurements get returned as zero, so we catch those.
   if (distance_master<radius && distance_master>0){
     Serial.println(F("Too close!"));
+    
+    tagIDs[tagItter][1] = 1;
+    
+    unsigned long  request_time_start = millis();
     if(sendRequest(RequestStation, 1, RequestShock)){
-      Serial.println(F("Valid ACK received"));
+      //Serial.println(F("Valid ACK received"));
 #ifdef DEBUG
       packet_is_OK();
 #endif
       Serial.println();
       //note that RequestStation = the ranging address
     }
+    unsigned long request_time = millis() - request_time_start;
   }
   //Once the tag is back outside the perimeter we send the all clear.
   else{
     Serial.println(F("Out of perimiter"));
-    if(sendRequest(RequestStation, 1, RequestReset)){
-      Serial.println(F("Valid ACK received"));
+    unsigned long  request_time_start = millis();
+    if (tagIDs[tagItter][1] == 1){
+      if(sendRequest(RequestStation, 1, RequestReset)){
+        //Serial.println(F("Valid ACK received"));
 #ifdef DEBUG
-      packet_is_OK();
+        packet_is_OK();
 #endif
-      Serial.println();
-      //note that RequestStation = the ranging address
+        Serial.println();
+        //note that RequestStation = the ranging address
+        tagIDs[tagItter][1] = 0;
+      }
     }
+    unsigned long request_time = millis() - request_time_start;
   }
   //As a safety measure we reset the ditance at the end of the loop
   distance_master = -1;
 
   //Cycle through the tag list
-  if(tagItter == tagIDsLength-1){
+  if(tagItter == (tagIDsLength/2)-1){
     tagItter = 0;
   }else{
     tagItter = tagItter+1;
   }
-  delay(5000);//THIS IS IMPORTANT!!!
+  unsigned long loop_time = millis() - loop_time_start;
+  Serial.print(F("Loop Time: "));
+  Serial.println(loop_time);
+  Serial.print(F("Setup Time: "));
+  Serial.println(setup_time);
+  Serial.print(F("Request Time: "));
+  Serial.println(request_time);
+  Serial.print(F("Range Time: "));
+  Serial.println(range_time);
+  //delay(5000);//THIS IS IMPORTANT!!!
 }
 
 uint8_t sendRequest(uint8_t station, uint8_t sendcount, uint8_t requestType)
@@ -182,12 +211,12 @@ uint8_t sendRequest(uint8_t station, uint8_t sendcount, uint8_t requestType)
 
   do
   {
-    Serial.print(startcount - sendcount + 1);
-    Serial.print(F(" Transmit request"));
+    //Serial.print(startcount - sendcount + 1);
+    //Serial.print(F(" Transmit request"));
     printRequestType(requestType);
-    Serial.print(F(" to station "));
-    Serial.println(station);
-    Serial.flush();
+    //Serial.print(F(" to station "));
+    //Serial.println(station);
+    //Serial.flush();
 
     //build the request payload
     LT.startWriteSXBuffer(0);                   //initialise SX buffer write at address 0
@@ -196,8 +225,8 @@ uint8_t sendRequest(uint8_t station, uint8_t sendcount, uint8_t requestType)
     LT.writeUint32(RangingUpTimemS);            //time for slave to stay in ranging listen
     TXPayloadL = LT.endWriteSXBuffer();         //close SX buffer write
 
-    Serial.print(F("request built: "));
-    Serial.println(LT.getTXPayloadCRC(TXPacketL));
+    //Serial.print(F("request built: "));
+    //Serial.println(LT.getTXPayloadCRC(TXPacketL));
 
     //now transmit the request
     digitalWrite(LED1, HIGH);
@@ -206,7 +235,8 @@ uint8_t sendRequest(uint8_t station, uint8_t sendcount, uint8_t requestType)
     PayloadCRC = LT.getTXPayloadCRC(TXPacketL);
     RXPacketL = LT.waitSXReliableACK(0, NetworkID, PayloadCRC, ACKtimeout);
 
-    Serial.println(F("request transmitted"));
+    //Serial.print(F("request transmitted: "));
+    //Serial.print(RXPacketL);
 
     if (RXPacketL > 0)
     {
@@ -234,7 +264,7 @@ void printRequestType(uint8_t type)
   switch (type)
   {
     case 1:
-      Serial.print(F(" RequestShock"));
+      Serial.print(F(" RequestReset"));
       break;
 
     case 2:
@@ -266,17 +296,17 @@ float actionRanging(uint32_t rangingaddress, uint8_t number, uint32_t timeout, i
   float distance_average;
   int32_t range_result;
 
-  Serial.print(F("Ranging address "));
-  Serial.println(rangingaddress);
-  Serial.flush();
+  //Serial.print(F("Ranging address "));
+  //Serial.println(rangingaddress);
+  //Serial.flush();
 
   LT.setupRanging(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate, rangingaddress, RANGING_MASTER);
   LT.setRangingCalibration(Calibration);               //override automatic lookup of calibration value from library table
 
   for (index = 1; index <= number; index++)
   {
-    Serial.print(F("Ranging attempt "));
-    Serial.println(index);
+    //Serial.print(F("Ranging attempt "));
+    //Serial.println(index);
 
     digitalWrite(LED1, HIGH);
     LT.transmitRanging(rangingaddress, timeout, txpower, WAIT_TX);
@@ -289,12 +319,12 @@ float actionRanging(uint32_t rangingaddress, uint8_t number, uint32_t timeout, i
       rangeing_results++;
       rangeings_valid++;
       digitalWrite(LED1, HIGH);
-      Serial.print(F("RangingValid"));
+      //Serial.print(F("RangingValid"));
       range_result = LT.getRangingResultRegValue(RANGING_RESULT_RAW);
 #ifdef DEBUG
-      Serial.print(F(",RAWRegisterValue,"));
-      Serial.print(range_result);
-      Serial.print(F(","));
+      //Serial.print(F(",RAWRegisterValue,"));
+      //Serial.print(range_result);
+      //Serial.print(F(","));
 #endif
       if (range_result > 800000)
       {
@@ -305,12 +335,12 @@ float actionRanging(uint32_t rangingaddress, uint8_t number, uint32_t timeout, i
       distance = LT.getRangingDistance(RANGING_RESULT_RAW, range_result, DistanceAdjustment);
       distance_sum = distance_sum + distance;
 
-      Serial.print(F("Distance,"));
-      Serial.print(distance, 1);
+      //Serial.print(F("Distance,"));
+      //Serial.print(distance, 1);
       RangingRSSI = LT.getRangingRSSI();
-      Serial.print(F(",RSSI,"));
-      Serial.print(RangingRSSI);
-      Serial.print(F("dBm"));
+      //Serial.print(F(",RSSI,"));
+      //Serial.print(RangingRSSI);
+      //Serial.print(F("dBm"));
       digitalWrite(LED1, LOW);
     }
     else
@@ -355,10 +385,10 @@ float actionRanging(uint32_t rangingaddress, uint8_t number, uint32_t timeout, i
 
 void packet_is_OK()
 {
-  Serial.print(F("LocalNetworkID,0x"));
-  Serial.print(NetworkID, HEX);
-  Serial.print(F(",TransmittedPayloadCRC,0x"));        //print CRC of transmitted packet
-  Serial.print(PayloadCRC, HEX);
+  //Serial.print(F("LocalNetworkID,0x"));
+  //Serial.print(NetworkID, HEX);
+  //Serial.print(F(",TransmittedPayloadCRC,0x"));        //print CRC of transmitted packet
+  //Serial.print(PayloadCRC, HEX);
 }
 
 

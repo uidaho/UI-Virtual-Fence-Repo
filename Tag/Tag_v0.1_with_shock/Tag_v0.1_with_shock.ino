@@ -1,6 +1,5 @@
 #include <SPI.h>                                //the LoRa device is SPI based so load the SPI library
 #include <SX128XLT.h>                           //include the appropriate library   
-#include <EEPROM.h>
 
 //*******  Setup hardware pin definitions here ! ***************
 
@@ -35,7 +34,7 @@ const float TestAltitude = 25.5;
 const uint8_t TrackerStatus = 1;                //set status bit to represent tracker GPS has fix
 
 const uint16_t NetworkID = 0x3210;              //NetworkID identifies this connection, needs to match value in transmitter
-const uint8_t ThisStation = 8;                //the number of this station for requests and ranging
+const uint8_t ThisStation = 1;                //the number of this station for requests and ranging
 
 SX128XLT LT;                                    //create a library class instance called LT
 
@@ -50,11 +49,6 @@ uint8_t RequestType;
 uint8_t Warnings = 0;
 int Duration = 40;
 byte SIntensity =1;
-
-//int shockNum = 0;
-int pointAddress = 0;
-int memPointer = 1;
-bool memoryToggle = true;
 
 #define DEBUG
 #define SHOCK 6
@@ -101,25 +95,6 @@ void setup() {
 
   Serial.println(F("Receiver ready"));
   Serial.println();
-
-  Serial.print("EEPROM length: "); // Check
-  Serial.println(EEPROM.length());
-
-  Serial.print("CRC32 of EEPROM data: 0x");
-  Serial.println(eeprom_crc(), HEX);
-
-  //set pointer address to value in 0th regiter
-  EEPROM.get(pointAddress, memPointer);
-  
-  EEPROM.put(pointAddress, memPointer);
-
-  /*Serial.print("Previous Shock Number: "); //print the number of shocks the tag gave lattime it was initialized
-  EEPROM.get(shockAddress, shockNum);
-  Serial.println(shockNum, 3);
-
-  shockNum = 0;  //reset the number of shocks for this run
-  EEPROM.put(shockAddress, shockNum); // save the reset shockNum*/
-  
 }
 
 void loop() {
@@ -303,70 +278,35 @@ void actionRanging(uint32_t rangingaddress)
 
 
 void actionShock(){
-
-  if(Warnings > 6){
-    return;
-  }
-   
   digitalWrite(A2, HIGH);
   delay(200);
   digitalWrite(A2, LOW);
-
-  if (Warnings > 1){
-    //Set Potentiometer
-    byte PotR = 10 - 2*SIntensity;
-    word PotVal = getPot(0);
-    while (PotVal!= PotR){
-      setPot(0, PotR);
-      if (true){
-        Serial.print(F("Set Pot: "));
-        Serial.println(PotR);
-        Serial.print(F("Get Pot: "));
-        Serial.println(PotVal);
-        delay(1000);
-      }
-      delay(10);
-      PotVal = getPot(0);
-    }
-    digitalWrite(CHARGE, HIGH);
+  //Set Potentiometer
+  byte PotR = 10 - 2*SIntensity;
+  word PotVal = getPot(0);
+  while (PotVal!= PotR){
+  setPot(0, PotR);
+  if (true){
+      Serial.print(F("Set Pot: "));
+      Serial.println(PotR);
+      Serial.print(F("Get Pot: "));
+      Serial.println(PotVal);
+      delay(1000);
+  }
     delay(10);
-    digitalWrite(SHOCK, HIGH);   // turn the LED on (HIGH is the voltage level)
-    delay(Duration);                // wait Duration
-    digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
-    digitalWrite(CHARGE, LOW);
+    PotVal = getPot(0);
   }
-  /*shockNum += 1;
-  EEPROM.put(shockAddress, shockNum);*/
-  //record the millis to the register pointed to by memPointer
-  //increment the memPointer by one and save
-  long t = millis();
-  byte four = (t & 0xFF);
-  byte three = ((t >> 8) & 0xFF);
-  byte two = ((t >> 16) & 0xFF);
-  byte one = ((t >> 24) & 0xFF);
-
-  if (memPointer < EEPROM.length()-3){
-    if (memoryToggle){
-      EEPROM.write(memPointer, four);
-      EEPROM.write(memPointer + 1, three);
-      EEPROM.write(memPointer + 2, two);
-      EEPROM.write(memPointer + 3, one);
-  
-      memPointer += 4;
-      EEPROM.put(pointAddress, memPointer);
-
-      memoryToggle = false;
-    }
-  }
-
-  Warnings += 1;
-  
+  digitalWrite(CHARGE, HIGH);
+  delay(10);
+  digitalWrite(SHOCK, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(Duration);                // wait Duration
+  digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
+  digitalWrite(CHARGE, LOW);
   return true;
 }
 
 void actionReset(){
   Warnings = 0;
-  memoryToggle = true;
   return true;
 }
 
@@ -440,25 +380,4 @@ void led_Flash(uint16_t flashes, uint16_t delaymS)
     digitalWrite(LED1, LOW);
     delay(delaymS);
   }
-}
-
-//This function checks the soundness of the internal memory
-unsigned long eeprom_crc(void) { 
-  const unsigned long crc_table[16] = {
-    0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
-    0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
-    0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
-    0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
-  };
-
-  unsigned long crc = ~0L;
-
-  for (int index = 0 ; index < EEPROM.length()  ; ++index) {
-    crc = crc_table[(crc ^ EEPROM[index]) & 0x0f] ^ (crc >> 4);
-    crc = crc_table[(crc ^ (EEPROM[index] >> 4)) & 0x0f] ^ (crc >> 4);
-    crc = ~crc;
-  }
-
-  return crc;
-
 }
