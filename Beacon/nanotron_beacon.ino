@@ -1,3 +1,5 @@
+#include <SoftwareSerial.h>
+
 struct Point {
   float x, y;
 };
@@ -15,8 +17,12 @@ int tagItter = 0;
 
 int blinkRate = 1000;
 
+SoftwareSerial Serial3(15,14);
+
 void setup() {
   Serial.begin(115200);
+  
+  SoftwareSerial Serial3(15,14);
   Serial3.begin(115200);
   Serial3.print("NCFG 1ff\r\n");  // Set *RRN response to include RSSI data
   Serial3.print("SBIV "+String(blinkRate)+"\r\n");  //Set host to blink every 1 second
@@ -24,6 +30,7 @@ void setup() {
 
   for(int i=0; i<tagIDsLength; i++){
     int checks = 0;
+    bool checked = false;
     while(checked == false){
       String c1 = "FNIN 0A 10";
       String target = sFill(String(tagIDs[i][0]), 12, '0');
@@ -56,15 +63,15 @@ void loop() {
   float distance;
   while(ranged == false){  
     String message = readNanoTron();
-    if(message.substring()==sFill(String(tagIDs[tagItter][0]), 12, '0')){
+    if(message.substring(12)==sFill(String(tagIDs[tagItter][0]), 12, '0')){
       ranged = true;
-      distance = message.substring();
+      distance = float(getDistance(message).toInt());
     }
   }
   //send command
   if(distance < distance_master){
     String c1 = "FNIN 0A 10";
-    String target = sFill(String(tagIDs[i][0]), 12, '0');
+    String target = sFill(String(tagIDs[tagItter][0]), 12, '0');
     String message = "111111";
     Serial3.print(c1+target+message+"\r\n");  
 
@@ -74,7 +81,7 @@ void loop() {
   else if(distance >= distance_master && tagIDs[tagItter][1] == 1){
     
     String c1 = "FNIN 0A 10";
-    String target = sFill(String(tagIDs[i][0]), 12, '0');
+    String target = sFill(String(tagIDs[tagItter][0]), 12, '0');
     String message = "000000";
     Serial3.print(c1+target+message+"\r\n");  
 
@@ -103,7 +110,6 @@ String sFill(String s, int len, char fill){
 }
 
 String readNanoTron(){
-
   String nanoRead = "";
   while (Serial3.available()) {
     int bad=0;
@@ -151,4 +157,27 @@ String getDNI(String readIn){
     }
   }
   return DNI;
+}
+
+String getDistance(String readIn){
+  String distance = "";
+  int readInSize = sizeof(readIn) / sizeof(char);
+  int cutStart, cutEnd;
+  int commaCounter = 0;
+
+  for(int i=0; i<readInSize; i++){
+    if (readIn.charAt(i) ==','){
+      commaCounter++;
+      if(commaCounter == 3){
+        cutStart = i+1;
+      }
+      if(commaCounter == 4){
+        cutEnd = i-1;
+      }
+    }
+  }
+
+  distance = readIn.substring(cutStart, cutEnd);
+  return distance;
+  
 }
