@@ -1,7 +1,9 @@
 #include "beaconpinout.h"
+#include <TinyGPS++.h>
+#include <SoftwareSerial.h>
 
-
-
+TinyGPSPlus gps;
+SoftwareSerial ss(TXPin, RXPin);
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
@@ -13,16 +15,19 @@ void setup() {
   {
     errorFlash();
   }
-  
+digitalWrite(GPSPOWER,HIGH);
+ss.begin(GPSBaud);
 }
 
 // the loop function runs over and over again forever
 int loopcount=0;
 void loop() {
   
-  if((loopcount%30000)==0)
+  if((loopcount%5000)==0)
   {
     Serial.println("Running, you can input a command for the nanotron to test, make sure that Both NL & CR is selected");
+    Serial.print("GPS year:");
+    Serial.println(gps.date.year());
     beaconFlash();
     loopcount=0;
   }
@@ -55,6 +60,13 @@ void loop() {
     Serial.println();
   }
   
+  if (ss.available() > 0)//GPS should almost always be available
+  {
+      gps.encode(ss.read());
+      digitalWrite(LED1,!digitalRead(LED1));
+  }
+
+
   loopcount++;
   delay(1);
 
