@@ -1,11 +1,21 @@
+#include <SoftwareSerial.h>
+#include <SPI.h>
+
 String self; //This is where our nanoTron ID goes
 
 int Warnings = 0;
 int Duration = 40;
 byte SIntensity =1;
 
+SoftwareSerial Serial3(15,14);
+
+#define SHOCK 6
+#define CHARGE 2
+#define PSS A0
+
 void setup() {
   Serial.begin(115200);
+  
   Serial3.begin(115200);
   Serial3.print("NCFG 1ff\r\n");  // Set *RRN response to include RSSI data
   Serial3.print("SBIV 1000\r\n");  //Set host to blink every 1 second
@@ -17,7 +27,7 @@ void setup() {
   while(detected = false){
     String nanoMessage = readNanoTron();
     if(getDNI(nanoMessage) == "10"+self+"000001"){
-      Serial3.print("11"+self+"000011");
+      Serial3.print("FNIN 0A 11"+self+"000011");
       detected = true;
     }
   }
@@ -28,6 +38,9 @@ void loop() {
   String nanoMessage = readNanoTron();
   if(getDNI(nanoMessage) == "10"+self+"111111"){
     Shock();
+  }  
+  else if(getDNI(nanoMessage) == "10"+self+"000000"){
+    Reset();
   }
 }
 
@@ -122,33 +135,8 @@ void Shock(){
     digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
     digitalWrite(CHARGE, LOW);
   }
-  /*shockNum += 1;
-  EEPROM.put(shockAddress, shockNum);*/
-  //record the millis to the register pointed to by memPointer
-  //increment the memPointer by one and save
-  long t = millis();
-  byte four = (t & 0xFF);
-  byte three = ((t >> 8) & 0xFF);
-  byte two = ((t >> 16) & 0xFF);
-  byte one = ((t >> 24) & 0xFF);
-
-  if (memPointer < EEPROM.length()-3){
-    if (memoryToggle){
-      EEPROM.write(memPointer, four);
-      EEPROM.write(memPointer + 1, three);
-      EEPROM.write(memPointer + 2, two);
-      EEPROM.write(memPointer + 3, one);
-  
-      memPointer += 4;
-      EEPROM.put(pointAddress, memPointer);
-
-      memoryToggle = false;
-    }
-  }
 
   Warnings += 1;
-  
-  return true;
 }
 
 void setPot(byte m, byte n)
@@ -192,6 +180,4 @@ digitalWrite(PSS, LOW);
 
 void Reset(){
   Warnings = 0;
-  memoryToggle = true;
-  return true;
 }
