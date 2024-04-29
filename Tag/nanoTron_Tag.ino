@@ -1,13 +1,13 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 
-String self; //This is where our nanoTron ID goes
+String self = "000000000201"; //This is where our nanoTron ID goes
 
 int Warnings = 0;
 int Duration = 40;
 byte SIntensity =1;
 
-SoftwareSerial Serial3(15,14);
+//SoftwareSerial Serial2(15,14);
 
 #define SHOCK 6
 #define CHARGE 2
@@ -16,18 +16,30 @@ SoftwareSerial Serial3(15,14);
 void setup() {
   Serial.begin(115200);
   
-  Serial3.begin(115200);
-  Serial3.print("NCFG 1ff\r\n");  // Set *RRN response to include RSSI data
-  Serial3.print("SBIV 1000\r\n");  //Set host to blink every 1 second
-  Serial3.print("EDNI 1\r\n"); // Activate *DNI to be able to read messagaes
+  Serial2.begin(115200);
+  Serial2.print("EBID 1\r\n"); // enable blink
+  Serial2.print("NCFG 8\r\n");  // Set *RRN response to include RSSI data
+  Serial2.print("SBIV 1000\r\n");  //Set host to blink every 1 second
+  Serial2.print("EDNI 1\r\n"); // Activate *DNI to be able to read messagaes
 
-  
+  int timeout=0;
+  while(!Serial2.available()&&timeout<10)  {
+    timeout++;
+    delay(1);
+  }
+  if (Serial2.available()){       
+    while(Serial2.available()){
+      Serial.write(Serial2.read());
+      delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
+    }
+    Serial.println();
+  }
 
   bool detected = false;
   while(detected = false){
     String nanoMessage = readNanoTron();
     if(getDNI(nanoMessage) == "10"+self+"000001"){
-      Serial3.print("FNIN 0A 11"+self+"000011");
+      Serial2.print("FNIN 0A 11"+self+"000011");
       detected = true;
     }
   }
@@ -36,6 +48,9 @@ void setup() {
 
 void loop() {
   String nanoMessage = readNanoTron();
+  if(nanoMessage != ""){
+  Serial.println(getMessage(getDNI(nanoMessage)));
+  }
   if(getDNI(nanoMessage) == "10"+self+"111111"){
     Shock();
   }  
@@ -52,21 +67,43 @@ String sFill(String s, int len, char fill){
   return filled;
 }
 
+String readNanoTron2(){
+  
+  String nanoRead = "";
+  int timeout=0;
+  while(!Serial2.available()&&timeout<10)  {
+    timeout++;
+    delay(1);
+  }
+  if (Serial2.available()){       
+    while(Serial2.available()){
+      char c = Serial2.read();
+      nanoRead = nanoRead + c;
+      //Serial.write(c);
+      delay(10);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
+    }
+    Serial.println();
+  }
+
+  return nanoRead;
+}
+
 String readNanoTron(){
   String nanoRead = "";
-  while (Serial3.available()) {
+  while (Serial2.available()) {
     int bad=0;
-    char c = Serial3.read();
+    char c = Serial2.read();
     if (c == '*') {
-      while (!Serial3.available()) {
+      while (!Serial2.available()) {
          //Wait for a Response
       }
-      char c1 = Serial3.read();
+      char c1 = Serial2.read();
+      nanoRead = nanoRead+ String(c)+String(c1);
       for(int i=1; i<80; i++){
-        while (!Serial3.available()) {
+        while (!Serial2.available()) {
          //Wait for a Response
         }
-        c = Serial3.read();               //Keep Reading in Node ID 
+        c = Serial2.read();               //Keep Reading in Node ID 
         if (c=='*'){
           bad = 1;  //variable to check for overlapping *RRN commands
           break;
@@ -89,17 +126,43 @@ String readNanoTron(){
   return nanoRead;
 }
 
+//A split function sure would be nice. Oh well...
 String getDNI(String readIn){
   String DNI = "";
-  int readInSize = sizeof(readIn) / sizeof(char);
+  int readInSize = readIn.length();
+  int DNIstart = -1;
 
-  for(int i=readInSize; i>0; i--){
-    if(readIn.charAt(i) == ';'){
-      String DNI = readIn.substring(i);
-      break;
+  for(int i=0; i<readInSize; i++){
+    //Serial.print(readIn.charAt(i));
+    if(readIn.charAt(i) == ':'){
+      String check = readIn.substring(i-3, i);
+      if(check == "DNI"){
+        DNIstart = i+1;
+      }
     }
+    if(readIn.charAt(i) == '*' && DNIstart != -1){
+      DNI = readIn.substring(DNIstart, i-1);
+    }
+    
   }
   return DNI;
+}
+
+String getMessage(String readIn){
+  String message = "";
+  int readInSize = readIn.length();
+  int messageStart = -1;
+
+  for(int i=readInSize; i>0; i--){
+    //Serial.print(readIn.charAt(i));
+    if(readIn.charAt(i) == ','){
+      message = readIn.substring(i+1, readInSize);
+      break;
+    }
+    
+  }
+  Serial.println(message);
+  return message;
 }
 
 void Shock(){
