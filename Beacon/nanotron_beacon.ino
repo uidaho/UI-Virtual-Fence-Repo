@@ -21,7 +21,7 @@ int blinkRate = 1000;
 
 void setup() {
   Serial.begin(115200);
-  
+  Serial.println(tagIDsLength);
   //SoftwareSerial Serial2(15,14);
   Serial2.begin(115200);
   Serial2.print("EBID 1\r\n"); //enable blink
@@ -45,18 +45,21 @@ void setup() {
   for(int i=0; i<tagIDsLength; i++){
     int checks = 0;
     bool checked = false;
+    String c1 = "FNIN 0A 10";
+    String target = sFill(String(tagIDs[i][0]), 12, '0');
+    String message = "000001";
+    Serial2.print(c1+target+message+"\r\n");
+    Serial.print(c1+target+message+"\r\n");
     while(checked == false){
-      String c1 = "FNIN 0A 10";
-      String target = sFill(String(tagIDs[i][0]), 12, '0');
-      String message = "000001";
-      Serial2.print(c1+target+message+"\r\n");
-      Serial.print(c1+target+message+"\r\n");
-      Serial2.print("RATO 1 000000000201 1000\r\n");
-      delay(1000);
+      //Serial2.print("RATO 1 000000000201 1000\r\n");
       String inMessage = readNanoTron();
-      inMessage = getDNI(inMessage);
-      if(inMessage == "11"+target+"000011"){
+      if(inMessage != ""){
+        Serial.println(inMessage);
+      }
+      inMessage = getMessage(getDNI(inMessage));
+      if(inMessage == "11"+target+"000011\r"){
         checked = true;
+        Serial.println("Successfully contacted tag " + target);
       }
       else if ( checks == 10){
         checks = 0;
@@ -65,7 +68,9 @@ void setup() {
       }
       else{
         checks++;
-      }
+      }  
+      delay(blinkRate); //this guarantees that we have blinked atleast once so we don't 
+      //potentially overwrite our message before it gets read
     }
   }
 
@@ -78,16 +83,18 @@ void loop() {
   //tag we are concerned with this cycle and discard the ranging data for the rest.
   bool ranged = false;
   float distance;
-  while(ranged == false){  
+  //while(ranged == false){  
     String message = readNanoTron();
     if(message != ""){
-      Serial.println(message);
+      //Serial.println(message);
+      Serial.println(getRRN(message).substring(13,25));
+      Serial.println(sFill(String(tagIDs[tagItter][0]), 12, '0'));
     }
-    if(message.substring(12)==sFill(String(tagIDs[tagItter][0]), 12, '0')){
+    if(getRRN(message).substring(13,25)==sFill(String(tagIDs[tagItter][0]), 12, '0')){
       ranged = true;
-      distance = float(getDistance(message).toInt());
+      distance = float(getDistance(getRRN(message)).toInt());
     }
-  }
+  //}
   //send command
   if(distance < distance_master){
     String c1 = "FNIN 0A 10";
@@ -112,7 +119,8 @@ void loop() {
   //potentially overwrite our message before it gets read
   //wait for response -- This adds an enourmous ammount of latency to the system may 
   //simply not do this
-  if(tagItter == tagIDsLength){
+  Serial.println(tagItter);
+  if(tagItter == tagIDsLength-1){
     tagItter = 0;
   }
   else{
@@ -127,26 +135,6 @@ String sFill(String s, int len, char fill){
     filled = fill+filled;
   }
   return filled;
-}
-
-String readNanoTron2(){
-  
-  String nanoRead = "";
-  int timeout=0;
-  while(!Serial2.available()&&timeout<10)  {
-    timeout++;
-    delay(1);
-  }
-  if (Serial2.available()){       
-    while(Serial2.available()){
-      char c = Serial2.read();
-      nanoRead = nanoRead + c;
-      Serial.write(c);
-      delay(10);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
-    }
-    Serial.println();
-  }
-  return nanoRead;
 }
 
 String readNanoTron(){
@@ -180,7 +168,7 @@ String readNanoTron(){
         nanoRead = nanoRead+ String(c);
       }
       if (bad==1) {    //Exit while loop if overlapping *RRN commands
-        nanoRead = "overlap";
+        nanoRead = "overlap"+nanoRead;
       }
     }
   }
@@ -209,6 +197,27 @@ String getDNI(String readIn){
   return DNI;
 }
 
+String getRRN(String readIn){
+  String RRN = "";
+  int readInSize = readIn.length();
+  int RRNstart = -1;
+
+  for(int i=0; i<readInSize; i++){
+    //Serial.print(readIn.charAt(i));
+    if(readIn.charAt(i) == ':'){
+      String check = readIn.substring(i-3, i);
+      if(check == "RRN"){
+        RRNstart = i+1;
+      }
+    }
+    if(readIn.charAt(i) == '\n' && RRNstart != -1){
+      RRN = readIn.substring(RRNstart, i-1);
+    }
+    
+  }
+  return RRN;
+}
+
 String getMessage(String readIn){
   String message = "";
   int readInSize = readIn.length();
@@ -222,7 +231,6 @@ String getMessage(String readIn){
     }
     
   }
-  Serial.println(message);
   return message;
 }
 String getDistance(String readIn){
@@ -244,6 +252,8 @@ String getDistance(String readIn){
   }
 
   distance = readIn.substring(cutStart, cutEnd);
+  Serial.println(readIn);
+  Serial.println(distance);
   return distance;
   
 }
