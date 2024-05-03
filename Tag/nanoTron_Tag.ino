@@ -22,24 +22,16 @@ void setup() {
   Serial2.print("SBIV 1000\r\n");  //Set host to blink every 1 second
   Serial2.print("EDNI 1\r\n"); // Activate *DNI to be able to read messagaes
 
-  int timeout=0;
-  while(!Serial2.available()&&timeout<10)  {
-    timeout++;
-    delay(1);
-  }
-  if (Serial2.available()){       
-    while(Serial2.available()){
-      Serial.write(Serial2.read());
-      delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
-    }
-    Serial.println();
-  }
-
   bool detected = false;
-  while(detected = false){
+  while(detected == false){
     String nanoMessage = readNanoTron();
-    if(getDNI(nanoMessage) == "10"+self+"000001"){
-      Serial2.print("FNIN 0A 11"+self+"000011");
+    if(nanoMessage != ""){
+      Serial.println(getMessage(getDNI(nanoMessage)));
+    }
+    String detectMessage = "10"+self+"000001\r";
+    if(getMessage(getDNI(nanoMessage)) == detectMessage){
+      Serial.println("detected");
+      Serial2.print("FNIN 0A 11"+self+"000011\r\n");
       detected = true;
     }
   }
@@ -161,7 +153,6 @@ String getMessage(String readIn){
     }
     
   }
-  Serial.println(message);
   return message;
 }
 
