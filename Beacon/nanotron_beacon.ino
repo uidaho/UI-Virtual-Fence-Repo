@@ -8,7 +8,7 @@ struct Line {
   Point p1, p2;
 };
 
-float distance_master = -1;
+float distance_master = 10;
 float radius = 10.0;
 
 int tagIDs[][2] = {{200,0},{201,0}}; //element 0 is id, element 1 is shock status (0 for not shocked, 1 for shocked)
@@ -73,6 +73,8 @@ void setup() {
       //potentially overwrite our message before it gets read
     }
   }
+  
+  Serial2.print("EDNI 0\r\n");
 
 }
 
@@ -83,16 +85,20 @@ void loop() {
   //tag we are concerned with this cycle and discard the ranging data for the rest.
   bool ranged = false;
   float distance;
+  int timeout=0;
   //while(ranged == false){  
-    String message = readNanoTron();
+  String message = readNanoTron();
     if(message != ""){
-      //Serial.println(message);
+      Serial.println("-----------------------------");
+      Serial.println(message);
       Serial.println(getRRN(message).substring(13,25));
       Serial.println(sFill(String(tagIDs[tagItter][0]), 12, '0'));
+      Serial.println("-----------------------------");
     }
     if(getRRN(message).substring(13,25)==sFill(String(tagIDs[tagItter][0]), 12, '0')){
       ranged = true;
       distance = float(getDistance(getRRN(message)).toInt());
+      Serial.println(distance);
     }
   //}
   //send command
@@ -136,38 +142,61 @@ String sFill(String s, int len, char fill){
   }
   return filled;
 }
+String readNanoTron2(){
+  int timeout = 0;
+  String nanoRead = "";
+  while(!Serial2.available()&&timeout<10)  {
+    timeout++;
+    delay(1);
+  }
+  if (Serial2.available()){       
+    while(Serial2.available()){
+      Serial.write(Serial2.read());
+      nanoRead = nanoRead+char(Serial2.read());
+      delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
+    }
+    Serial.println();
+  }
+  return nanoRead;
+}
 
 String readNanoTron(){
   String nanoRead = "";
   while (Serial2.available()) {
     int bad=0;
+    int lines = 0;
     char c = Serial2.read();
+    delay(1);
     if (c == '*') {
       while (!Serial2.available()) {
          //Wait for a Response
       }
       char c1 = Serial2.read();
       nanoRead = nanoRead+ String(c)+String(c1);
-      for(int i=1; i<80; i++){
+      while(true){
         while (!Serial2.available()) {
          //Wait for a Response
         }
         c = Serial2.read();               //Keep Reading in Node ID 
+        delay(1);
         if (c=='*'){
-          bad = 1;  //variable to check for overlapping *RRN commands
-          break;
+          bad++;  //variable to check for overlapping *RRN commands
+          if(bad >= 2){
+            break;
+          }
         } 
         
           //stop filling out IDBlink at new line - not needed
         if (c=='\n') {
           nanoRead = nanoRead+ String(c);
-          int track=i;
-            //Serial.println(track);  //print length of serial command
-          break;                          
+          lines++;
+          if(lines >= 2){
+            break;         
+          }                 
         }
         nanoRead = nanoRead+ String(c);
       }
-      if (bad==1) {    //Exit while loop if overlapping *RRN commands
+      if (bad >= 2) {    //Exit while loop if overlapping *RRN commands
         nanoRead = "overlap"+nanoRead;
       }
     }
