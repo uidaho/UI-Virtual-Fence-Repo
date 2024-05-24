@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 
-String self = "000000000201"; //This is where our nanoTron ID goes
+String self = "000000000200"; //This is where our nanoTron ID goes
 
 int Warnings = 0;
 int Duration = 40;
@@ -13,16 +13,29 @@ byte SIntensity =1;
 #define CHARGE 2
 #define PSS A0
 
+#define LED1 30 //defined as output in beaconinit
+#define LED2 31//defined as output in beaconinit
+#define LED3 32//defined as output in beaconinit
+#define LED4 33//defined as output in beaconinit
+#define LED5 34//defined as output in beaconinit
+
+
 void setup() {
   Serial.begin(115200);
   
   Serial2.begin(115200);
-  Serial2.print("EBID 1\r\n"); // enable blink
+  //Serial2.print("EBID 1\r\n"); // enable blink
   Serial2.print("NCFG 8\r\n");  // Set *RRN response to include RSSI data
-  Serial2.print("SBIV 1000\r\n");  //Set host to blink every 1 second
+  //Serial2.print("SBIV 1000\r\n");  //Set host to blink every 1 second
   Serial2.print("EDNI 1\r\n"); // Activate *DNI to be able to read messagaes
+  
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+  pinMode(LED5, OUTPUT);
 
-  bool detected = false;
+  bool detected = true;
   while(detected == false){
     String nanoMessage = readNanoTron();
     if(nanoMessage != ""){
@@ -39,14 +52,16 @@ void setup() {
 }
 
 void loop() {
-  String nanoMessage = readNanoTron();
+  String nanoMessage = getMessage(getDNI(readNanoTron()));
   if(nanoMessage != ""){
-  Serial.println(getMessage(getDNI(nanoMessage)));
+  Serial.println(nanoMessage);
   }
-  if(getDNI(nanoMessage) == "10"+self+"111111"){
+  if(nanoMessage == "10"+self+"111111\r"){
+    Serial.println("Shocking");
     Shock();
   }  
-  else if(getDNI(nanoMessage) == "10"+self+"000000"){
+  else if(nanoMessage == "10"+self+"000000\r"){
+    Serial.println("Resetting");
     Reset();
   }
 }
@@ -96,6 +111,7 @@ String readNanoTron(){
          //Wait for a Response
         }
         c = Serial2.read();               //Keep Reading in Node ID 
+        Serial.print(c);
         if (c=='*'){
           bad = 1;  //variable to check for overlapping *RRN commands
           break;
@@ -159,15 +175,26 @@ String getMessage(String readIn){
 void Shock(){
 
   if(Warnings > 6){
+    digitalWrite(LED5, HIGH);
+    delay(200);
+    digitalWrite(LED5, LOW);
     return;
   }
    
   digitalWrite(A2, HIGH);
   delay(200);
   digitalWrite(A2, LOW);
+  digitalWrite(LED1, HIGH);
+  delay(200);
+  digitalWrite(LED1, LOW);
 
   if (Warnings > 1){
+    
+    digitalWrite(LED2, HIGH);
+    delay(200);
+    digitalWrite(LED2, LOW);
     //Set Potentiometer
+    /*
     byte PotR = 10 - 2*SIntensity;
     word PotVal = getPot(0);
     while (PotVal!= PotR){
@@ -188,6 +215,7 @@ void Shock(){
     delay(Duration);                // wait Duration
     digitalWrite(SHOCK, LOW);    // turn the LED off by making the voltage LOW
     digitalWrite(CHARGE, LOW);
+    */
   }
 
   Warnings += 1;
@@ -233,5 +261,12 @@ digitalWrite(PSS, LOW);
 }
 
 void Reset(){
+  digitalWrite(LED1, HIGH);
+  digitalWrite(LED3, HIGH);
+  digitalWrite(LED5, HIGH);
+  delay(200);
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED3, LOW);
+  digitalWrite(LED5, LOW);
   Warnings = 0;
 }
