@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 
-String self = "000000000200"; //This is where our nanoTron ID goes
+String self = "000000000201"; //This is where our nanoTron ID goes
 
 int Warnings = 0;
 int Duration = 40;
@@ -24,10 +24,27 @@ void setup() {
   Serial.begin(115200);
   
   Serial2.begin(115200);
-  //Serial2.print("EBID 1\r\n"); // enable blink
+  Serial2.print("SFAC\r\n"); //reset nanotron
+  Serial2.print("SNID "+ self +"\r\n"); //set nanotron ID
+  Serial2.print("GNID\r\n");
+  Serial2.print("EBID 0\r\n"); // enable blink
   Serial2.print("NCFG 8\r\n");  // Set *RRN response to include RSSI data
   //Serial2.print("SBIV 1000\r\n");  //Set host to blink every 1 second
   Serial2.print("EDNI 1\r\n"); // Activate *DNI to be able to read messagaes
+  //Serial2.print("BRAR 0\r\n"); //disable ranging broadcast
+  
+  int timeout=0;
+  while(!Serial2.available()&&timeout<10)  {
+    timeout++;
+    delay(1);
+  }
+  if (Serial2.available()){       
+    while(Serial2.available()){
+      Serial.write(Serial2.read());
+      delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
+    }
+    Serial.println();
+  }
   
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -49,13 +66,21 @@ void setup() {
     }
   }
 
+  Serial2.println("EBID 1");
+  Serial2.println("EDNI 1");
 }
 
 void loop() {
-  String nanoMessage = getMessage(getDNI(readNanoTron()));
-  if(nanoMessage != ""){
-  Serial.println(nanoMessage);
+  Serial2.println("RATO 0 000000000200");
+  //Serial2.println("EDNI 1");
+  String nanoRead = readNanoTron();
+  if(nanoRead != ""){
+  Serial.println(nanoRead);
   }
+  String nanoMessage = getMessage(getDNI(nanoRead));
+ /* if(nanoMessage != ""){
+  Serial.println(nanoMessage);
+  }*/
   if(nanoMessage == "10"+self+"111111\r"){
     Serial.println("Shocking");
     Shock();
