@@ -1,57 +1,37 @@
-//LoRa Modem Varaible Parameters (Put varaibles here )
-uint8_t Bandwidth = LORA_BW_0800;           //LoRa bandwidth
-uint8_t SpreadingFactor = LORA_SF8;         //LoRa spreading factor
-int8_t RangingTXPower = 31;                 //Transmit power used for ranging varies from 0 to 31
-uint16_t Calibration = 11426;               // Ranging calibrarion value
-/*****************************************************************************************************
-  All Variable Definitions
-  CAlibration values from applicaiton note
-__________________________________________________________________
-                                           SF
-                  ------------------------------------------------          
-                    5       6       7       8       9       10
-                  ------------------------------------------------  
-         | 400   |  10299   10271   10244   10242   10230   10246
-  BW(kHz)| 800   |  11486   11474   11453   11426   11417   11401 
-         | 1600  |  13308   13493   13528   13515   13430   13376
-______________________________________________________________________  
+/*
+This file provides a pinout for the virtual fence tag usage by the software based on the schematic designs
+current hardware uses an ATMEGA 328PB and a nanotron radio for ranging
+Edited: 5 Jun 24
+By: Andrew Carefoot
+*/
+//onboard led
+#define LED1 A0
 
-*******************************************************************************************************/
-//*******  Setup hardware pin definitions here ! ***************
+//flash SPI comms
+#define FLASHCS 5
+#define FLASHMISO 12
+#define FLASHMOSI 11
+#define FLASHSCK 13
 
-//These are the pin definitions for one of my own boards, the Easy Pro Mini,
-//be sure to change the definitions to match your own setup.
+//nanotron communication pins
+#define NANORST 10
+#define NANOUSARTRX 7  //serial communication from nanotron
+#define NANOUSARTTX 8  //serial communication to nanotron
+#define NANOENABLE A3
 
-#define NSS 10        //Chip Select pin. From Circuit digram (Beaccon V2 with Mega) NSSCTS is connected to D10
-#define RFBUSY 7      //From Circuit digram (Beaccon V2 with Mega) BUSY is connected to D7
-#define NRESET 9      //From Circuit digram (Beaccon V2 with Mega) NRREET is connected to D10
-#define DIO1 5//3     //From Circuit digram (Beaccon V2 with Mega) DIO1 is connected to D5
-#define LORA_DEVICE DEVICE_SX1280                //we need to define the device we are using
+//ftdi hardware serial comms
+#define FTDIRX 0  //recieving from ftdi comms
+#define FTDITX 1  //sending to ftdi
 
-//*******  Setup LoRa Parameters Here ! ***************
-//Board LEDs
-#define LED1 30 //defined as output in beaconinit
-#define LED2 31//defined as output in beaconinit
-#define LED3 32//defined as output in beaconinit
-#define LED4 33//defined as output in beaconinit
-#define LED5 34//defined as output in beaconinit
-#define SX1280LED 8//defined as output 
+//GPS pins
+#define GPSRX 3
+#define GPSTX 4
 
-//LoRa Modem Constant Parameters
-const uint32_t Frequency = 2445000000;           //frequency of transmissions in hz
-const int32_t Offset = 0;                        //offset frequency in hz for calibration purposes
-const uint8_t CodeRate = LORA_CR_4_5;            //LoRa coding rate
-const uint16_t  rangingRXTimeoutmS = 0x00FF;     //ranging RX timeout in mS
-const uint16_t  waittimemS = 10000;              //wait this long in mS for packet before assuming timeout
-const uint16_t  TXtimeoutmS = 5000;              //ranging TX timeout in mS
-const uint16_t  packet_delaymS = 0;              //forced extra delay in mS between ranging requests
-const uint16_t  rangeingcount = 1;               //number of times ranging is carried out for each distance measurment
-const float distance_adjustment = 1.0000;              //adjustment factor to calculated distance
-const uint8_t TXpower = 31;                        //Transmit power used to communicate it is always 31
+//shock circuit pins
+#define SHOCK 6
+#define BOOSTEN 2  //shock charge enable
+#define BUZZER A2
 
-
-// Flash memory 
-#define Flashpin         21				// Flash memory SS pin
-uint16_t expectedDeviceID = 0xEF40;
-uint32_t Last_Address = 0;
-uint8_t m = 6;                  //Address of memory wehre Last_address starts
+//baudrate definitions
+#define NANOBAUD 115200
+#define TAGBAUD 115200
