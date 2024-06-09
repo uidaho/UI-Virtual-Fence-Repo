@@ -5,9 +5,7 @@
  * Modified: 7 Jun 24
  */
 
-#include <SoftwareSerial.h>
-
-float distance = 10; //danger distance setting in cm
+float distance = 100; //danger distance setting in cm
 char c;
 String tag_test = "000000000002";
 int range_val;
@@ -16,35 +14,28 @@ struct tag{
   int current_range;
   String node_id;
   int voltage;
+  int beeps;
 };
 
 struct tag test;
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(115200);
   Serial2.begin(115200);
   Serial2.println("snid 000000000001");
-  delay(10);
-  Serial.println("gnid"); 
-  Serial2.println("gnid");  //Do not broadcast ranging results (Ranging is performed by Beacon)
-  delay(10);
-  //Serial2.println("edan 1");
-  //delay(100);
-  //Serial2.println("edni 1");
+  Serial2.println("edan 1");
+  delay(1);
+  Serial2.println("edni 1");
 }
 
 void loop() {
-  range_val = range(tag_test);
-  Serial.print(range_val);
-  Serial.println();
   update_me(&test);
 }
 
 int range(String tag_id){
   /*
    * This function provides ranges for the nanotron.
-   * Input: nanotron tag ID in string format.
+   * Input: tag struct pointer.
    * Output: Range of tag from the beacon in cm
    */
   String ranging = "rato 0 ";
@@ -62,7 +53,6 @@ int range(String tag_id){
   buff += reading.substring(3,9);
   int temp = 0;
   temp = buff.toInt();
-  //delay(2000);
   return temp;
 }
 
@@ -73,9 +63,14 @@ void update_me(struct tag* temp){
    * Output: nothing all values are changed in memory directly.
    */
   temp->current_range = range(temp->node_id);
-  Serial.println();
+  if(temp->current_range == distance){
+    temp->beeps = beep(temp->node_id,temp->beeps);
+  }
+  else{
+    temp->beeps = 0; //assume cow has left the boundary and reset the beep count.
+  }
   /*
-   * The sdat command has a special way the message must be formed.
+   * The sdat command has a special way the message must be formed if sending api commands.
    * First we call for the sdat command, then selecting option 1 allows us to set a timeout which is reflected at the end.
    * the next value is the ID of the tag we are calling.
    * Then the value is the size of the data packet in bytes.
@@ -86,13 +81,40 @@ void update_me(struct tag* temp){
    * the length in 1 byte, the command opcode in 1 byte (CMD block), and if the command has data the data block last.
    * Final piece is the timeout of the call if using option 1 vs 0.
    */
-  Serial2.println("sdat 1 000000000002 9 081255540254000258 5000"); //this command requests the voltage the nanotron sees
-  while(Serial2.available() > 0){
-    Serial.write(Serial2.read());
-  }
-  Serial2.println("sdat 1 000000000002 a 08125554025500034201 5000"); //this command tells the nanotron to change transmission power to 1.
-  while(Serial2.available() >0){
-    Serial.write(Serial2.read());
-  }
+  //put code for other updates here:
   return;
+}
+
+void shock(String tag_id){
+  /*
+  *This function provides a simple shock command by sending SHOCK in hex to the tag_id input in.
+  *Input: nanotron id to be shocked.
+  *Output: nothing this is assumes success currently
+  */
+  String shocking = "sdat 0 ";
+  shocking += tag_id;
+  shocking += " 5 53484f434b";
+  Serial2.println(shocking);
+  return;
+}
+
+int beep(String tag_id, int beeps){
+  /*
+  *This function provides a simple beep command by sending BEEP in hex to the tag provided if less than 5 beeps have occured.
+  *In the event 5 beeps have already occured the sytem will instead send a shock.
+  *Input: nanotron id to be beeped, number of times beep has occured to resolve if shock should occur.
+  *Output: number of beeps that has occured thus far.
+  */
+  if(beeps <= 5){
+    String beeping = "sdat 0 ";
+    beeping += tag_id;
+    beeping += " 4 42454550";
+    Serial2.println(beeping);
+    beeps += 1;
+  }
+  else{
+    shock(tag_id);
+    beeps = 0;
+  }
+  return beeps;
 }
