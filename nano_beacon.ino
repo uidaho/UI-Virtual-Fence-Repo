@@ -2,7 +2,7 @@
  * This code has been created as an example of the beacon ranging and perfoming message transmissions.
  * The range function provides ranging functionality, and the update function provides examples of how to use the over the air communictaions from the nanotron radios.
  * Created by: Andrew Carefoot
- * Modified: 7 Jun 24
+ * Modified: 10 Jun 24
  */
 
 float distance = 100; //danger distance setting in cm
