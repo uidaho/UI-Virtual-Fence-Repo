@@ -5,7 +5,7 @@
  * Modified: 10 Jun 24
  */
 
-float distance = 100; //danger distance setting in cm
+float distance = 1000; //danger distance setting in cm
 char c;
 String tag_test = "000000000002";
 int range_val;
@@ -26,10 +26,12 @@ void setup() {
   Serial2.println("edan 1");
   delay(1);
   Serial2.println("edni 1");
+  test.node_id = tag_test;
 }
 
 void loop() {
   update_me(&test);
+  delay(5000);
 }
 
 int range(String tag_id){
@@ -41,6 +43,7 @@ int range(String tag_id){
   String ranging = "rato 0 ";
   ranging += tag_id;
   String reading = "";
+  Serial.println(tag_id);
   Serial2.println(ranging);
   while (Serial2.available() > 0){ 
      c = Serial2.read();
@@ -63,7 +66,7 @@ void update_me(struct tag* temp){
    * Output: nothing all values are changed in memory directly.
    */
   temp->current_range = range(temp->node_id);
-  if(temp->current_range == distance){
+  if(temp->current_range <= distance){
     temp->beeps = beep(temp->node_id,temp->beeps);
   }
   else{
@@ -93,7 +96,8 @@ void shock(String tag_id){
   */
   String shocking = "sdat 0 ";
   shocking += tag_id;
-  shocking += " 5 53484f434b";
+  shocking += " 05 53484f434b";
+  Serial.println(shocking);
   Serial2.println(shocking);
   return;
 }
@@ -108,7 +112,8 @@ int beep(String tag_id, int beeps){
   if(beeps <= 5){
     String beeping = "sdat 0 ";
     beeping += tag_id;
-    beeping += " 4 42454550";
+    beeping += " 04 42454550";
+    Serial.println(beeping);
     Serial2.println(beeping);
     beeps += 1;
   }

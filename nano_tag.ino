@@ -1,20 +1,22 @@
 /*
  * This code is for the nanotron tag designs in use currently. The only service the tag provides is serial reading capability.
  * Created by: Andrew Carefoot
- * Modified: 10 Jun 24
+ * Modified: 18 Jun 24
  */
 
 #include <SoftwareSerial.h>
 #include "tagpinout.h"
 
 char c;
+int duration = 500;
+String message = "";
 
-SoftwareSerial Serial2(NANOUSARTTX,NANOUSARTRX);
+SoftwareSerial Serial2(12,11);
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  Serial2.begin(115200);
+  Serial.begin(19200);
+  Serial2.begin(19200);
   pinMode(SHOCK,OUTPUT);
   digitalWrite(SHOCK,LOW);
   pinMode(BOOSTEN,OUTPUT);
@@ -22,35 +24,48 @@ void setup() {
   pinMode(BUZZER,OUTPUT);
   digitalWrite(BUZZER,LOW);
   Serial2.println("snid 000000000002");
-  delay(100);
   Serial.println("gnid");
   Serial2.println("gnid");
-  delay(1);
   while(Serial2.available() > 0){
     Serial.write(Serial2.read());
+    delay(1);
   }
-  Serial2.println("edan 1");
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  String message = "";
+  message = "";
   while(Serial2.available() > 0){
     c = Serial2.read();
+    Serial.print(c);
     message += c;
+    delay(1);
   }
-  if(message.substring(0,3) = "*dno"){
+  if(message.substring(0,17)== "*DNO:000000000001"){
     Serial.println("gdat");
+    Serial2.println("gdat");
+    delay(500);
     message = "";
+    while(Serial2.available() > 0){
+      c = Serial2.read();
+      message += c;
+      delay(1);
+    }
+    Serial.println(message.substring(16,24));
+    if(message.substring(16,24) == "42454550"){
+      beep();
+    }
+    else if(message.substring(16,26) == "53484F434B"){
+      shock();
+    }
+    else{
+      Serial.println("nothing");
+    }
   }
-  while(Serial2.available() > 0){
-    c = Serial2.read();
-    message += c;
-  }
-  Serial.println(message);
 }
 
 void shock(){
+  Serial.println("shocking");
   digitalWrite(BOOSTEN,HIGH);
   delay(10);
   digitalWrite(SHOCK,HIGH);
@@ -60,7 +75,8 @@ void shock(){
 }
 
 void beep(){
+  Serial.println("beeping");
   digitalWrite(BUZZER,HIGH);
-  delay(500);
+  delay(duration);
   digitalWrite(BUZZER,LOW);
 }
