@@ -1,3 +1,6 @@
+/**
+ * @file SX1280 Beacon.ino
+*/
 #include <SPI.h>                                //the LoRa device is SPI based so load the SPI library                                         
 #include <SX128XLT.h>                           //include the appropriate library  
 
@@ -92,6 +95,9 @@ void setup() {
 
 }
 
+/**
+@brief Meat here
+* */
 void loop() {
 
   unsigned long range_time = 0;
