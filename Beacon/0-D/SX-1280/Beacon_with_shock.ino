@@ -95,9 +95,6 @@ void setup() {
 
 }
 
-/**
-@brief Meat here
-* */
 void loop() {
 
   unsigned long range_time = 0;
