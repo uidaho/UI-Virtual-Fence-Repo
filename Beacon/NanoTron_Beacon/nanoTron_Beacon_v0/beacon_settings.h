@@ -45,7 +45,7 @@ By: Matthew Shryock, Jacob Karl
 struct Tag {
   String ID; //the unique ID of this tag
   float distance = -1; //the distance of the tag from the boundary when we ranged it last. Initialized to -1 to prevent us from warning a tag that just entered the network.
-  int cooldown_timestamp = 0; //the next time we know the tag will be awake.
+  int cooldown_timestamp = 0; //the next time we know the tag will be awake. In mS ahead of current time (also in mS). i.e. if current time is 5000mS and we know that the tag will be awake in 2000mS this variable will be 7000mS.
   int[64] encryption_key; //this tags unique encryption_key. One of the 64 encryption keys from the encryption_key_table.
   bool warning_flag = false; //a switch that tells us whether or not ro sent the reset signal rather than do nothing when a tag is outside the boundary.
   int communication_attempts = 0; //the number of times we have tried to communicate with this tag without getting a response.
