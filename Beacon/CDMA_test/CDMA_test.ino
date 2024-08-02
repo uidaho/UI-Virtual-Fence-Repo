@@ -29,24 +29,36 @@ void setup() {
   e3 = kronecker(key3, encode(m3));
   message = messageAdd(e1,e2);
   message = messageAdd(message, e3);
-  /*for(int i=0; i<4; i++){
-    Serial.print(e1.array[i]);
+  //*
+  for(int i=0; i<128; i++){
+    Serial.print(e3.array[i]);
     Serial.print(", ");
   }
-  Serial.println();*/
+  Serial.println();/*/
   for(int i=0; i<128; i++){
     Serial.print(message.array[i]);
     Serial.print(", ");
   }//*/
   Serial.println();
 
-  array4 d1 = decode(e3, key3);
+  array4 d1 = decode(message, key1);
+  array4 d2 = decode(message, key2);
+  array4 d3 = decode(message, key3);
 
   for(int i=0; i<4; i++){
     Serial.print(d1.array[i]);
     Serial.print(", ");
   }
-
+  Serial.println();
+  for(int i=0; i<4; i++){
+    Serial.print(d2.array[i]);
+    Serial.print(", ");
+  }
+  Serial.println();
+  for(int i=0; i<4; i++){
+    Serial.print(d3.array[i]);
+    Serial.print(", ");
+  }
 }
 
 void loop() {
@@ -66,9 +78,9 @@ array4 encode(int m[4]){
 array128 kronecker(int key[32], array4 m){
   Serial.println("kronecker");
   array128 k;
-  for(int i=0; i<32; i++){
-    for(int j=0; j<4; j++){
-      k.array[(i*4)+j] = key[i]*m.array[j];
+  for(int i=0; i<4; i++){
+    for(int j=0; j<32; j++){
+      k.array[(i*32)+j] = key[j]*m.array[i];
     }
   }
   return k;
@@ -101,7 +113,7 @@ array4 decode(array128 message, int key[32]){
   for(int i=0; i<4; i++){
     int messageChunk = 0;
     for(int j=0; j<32; j++){
-      messageChunk = messageChunk + patternedMessage.array[(i*4)+j];
+      messageChunk = messageChunk + patternedMessage.array[(i*32)+j];
     }
     decodedMessage.array[i] = messageChunk;
   }
