@@ -54,17 +54,53 @@ struct array256{
 
 struct Tag {
   String ID; //the unique ID of this tag
-  float distance = -1; //the distance of the tag from the boundary when we ranged it last. Initialized to -1 to prevent us from warning a tag that just entered the network.
+  float distance = -1; //the distance of the tag from the boundary when we ranged it last in cmd. Initialized to -1 to prevent us from warning a tag that just entered the network.
   int cooldown_timestamp = 0; //the next time we know the tag will be awake. In mS ahead of current time (also in mS). i.e. if current time is 5000mS and we know that the tag will be awake in 2000mS this variable will be 7000mS.
   int encryption_key[32]; //this tags unique encryption_key. One of the 32 encryption keys from the encryption_key_table.
   bool warning_flag = false; //a switch that tells us whether or not ro sent the reset signal rather than do nothing when a tag is outside the boundary.
   int communication_attempts = 0; //the number of times we have tried to communicate with this tag without getting a response.
 };
 
-float boundary = 100.0; //the distance from the beacon that tags will start to recieve warnings.
+int boundary = 1000; //the distance from the beacon (in cm) that tags will start to recieve warnings.
 Tag all_tags[32]; //a list of tag structures that constitutes all of the tags on the network.
-Tag all_cool_tags[32]; //a subset of all_tags that contains tags with cooldown_timestamp < current time.
+int indexes_of_all_cool_tags[32]; //a list of indexes for all_tags that contains tags with cooldown_timestamp < current time.
 array256 message; //the CDMA encoded message that we broadcast at the end of the main loop.
-int encryption_key_table[32][32]; //a set of 32 orthoganal binary encryption codes (Walsh matricies, maybe, I need to look into this).
+int encryption_key_table[32][32] = //a set of 32 orthoganal binary encryption codes (Walsh matricies, maybe, I need to look into this).
+              {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+               {1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1 },
+               {1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1,  1,  1, -1, -1},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {}};
+
+int warning_message[8] = {0,0,0,0,1,1,1,1};
+int reset_message[8] = {0,0,0,0,1,0,0,0};
+               
 int max_communication_attempts = 10; //the number of times we will try and communicate with a tag before we remove it from the network.
 int number_of_tags = 0; //How many tags are on the network. Also serves as an index for the end of all_tags[].
