@@ -28,6 +28,8 @@ void loop() {
     //0.5 if [tag.communication attempts] > [max communication attempts]
     if(all_tags[indexes_of_all_cool_tags[i]].communication_attempts > max_communication_attempts){
       //0.5.1 remove [tag] from [all tags] and go to 0.8
+      //Actually queue tags to be removed from the master list. Removing them now will mess up the rest of the loops.
+      indexes_of_all_removed_tags[i] = indexes_of_all_cool_tags[i];
     }
     //0.6 if [tag.distance]<=[boundary]&&[tag.distance]>0
     else if (all_tags[indexes_of_all_cool_tags[i]].distance <= boundary && all_tags[indexes_of_all_cool_tags[i]].distance > 0){
@@ -42,8 +44,20 @@ void loop() {
       encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, reset_message);
       all_tags[indexes_of_all_cool_tags[i]].warning_flag = false;
     }
-    //0.8 calculate [tag.cooldown timestamp] based on [tag.distance]
-    //0.9 {encode and queue} sleep message based on [tag.cooldown timestamp]
+    //0.8 calculate [tag.cooldown timestamp] based on [tag.distance] & 0.9 {encode and queue} sleep message based on [tag.cooldown timestamp]
+    //This math is a bit paper-napkin, but a cow has a 25mph dead sprint which is about 73 ft in 2 sec, 73ft is about 22m, and round up to 25m to give some cushion/make the number prettier
+    if(all_tags[indexes_of_all_cool_tags[i]].distance < boundary + 2500){
+      encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, sleep1);
+    }
+    else if(all_tags[indexes_of_all_cool_tags[i]].distance <= boundary + 5000 && all_tags[indexes_of_all_cool_tags[i]].distance > boundary + 2500){
+      encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, sleep2);      
+    }
+    else if(all_tags[indexes_of_all_cool_tags[i]].distance <= boundary + 7500 && all_tags[indexes_of_all_cool_tags[i]].distance > boundary + 5000){
+      encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, sleep3);      
+    }
+    else{
+      encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, sleep4);      
+    }
   }
   //0.10 broadcast [Message] & 0.11 clear [Message]
   Serial2.print("BDAT 0 ff ");
@@ -52,6 +66,7 @@ void loop() {
     message.array[i] = 0;
   }
   Serial2.println();
+  //0.11&1/2 remove tags specified in 0.5.1
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
 
 }
@@ -90,6 +105,8 @@ void txRecieve(){
     }
   }
   //1.4 set [tag.communication attempts] to 0
+  //Is it possible/likely for us to recieve transmissions that arent *DNOs or *RRNs?
+  all_tags[getTag(reading.substring(5,16))].communication_attempts = 0;
 }
 
 //This is the function that CDMA encodes messages and adds them to the global [message].
