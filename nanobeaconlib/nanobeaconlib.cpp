@@ -1,14 +1,19 @@
 #include "nanobeaconlib.hpp"
 
-nanobeacon::nanobeacon()
-{
+nanobeacon::nanobeacon(){
+    ///Constructor for the nanobeacon using its default ID.
     int setting = 0;
+
     ID = getsettingself(setting);
+    return;
 }
 
 nanobeacon::nanobeacon(String selfid){
+    ///Constructor for the nanobeacon if setting a new ID.
     int setting = 0;
+
     setsettingself(setting,selfid);
+    return;
 }
 
 int nanobeacon::getsettingself(int setting){
@@ -133,6 +138,40 @@ bool nanobeacon::setsettingself(int setting, String option){
     return query;
 }
 
+bool nanobeacon::temptoocool(int lowtemp){
+    /**
+     * Function provides a check for if last read temp has fallen below saftey value.
+     * Input: int for the saftey low temperature
+     * Output: true if temperature is in safe range, false if temperature is too low
+     */
+    if(lowtemp < temperature){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool nanobeacon::temptoohot(int hightemp){
+    /**
+     * Function provides a check for if last read temp has risen above saftey value.
+     * Input: int for the saftey high temperature
+     * Output: true if temperature is in safe range, false if temperature is too high
+     */
+    if(hightemp < temperature){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+nanotag::nanotag(String selfid){
+    ///Constructor for the nanotag object
+    ID = selfid;
+    return;
+}
+
 int nanotag::getsettingother(int setting){
     /**
      * Function provides a wrapper to get information from other nanotrons over the air if a value of 0 is ever returned an error has occured.
@@ -251,4 +290,59 @@ String nanotag::getsettingother(){
     values += value_conversion;
     return values;
 }
-        
+
+bool nanotag::closerthandistance(int mindistance){
+    /**
+     * Function checks if the cow has gotten too close to the beacon (keep out)
+     * Input: int minimum acceptable distance in a radius from the beacon
+     * Output: True if cow remains outside of the boundary distance, false if cow has entered the boundary.
+     */
+    if(mindistance < distance){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool nanotag::furtherthandistance(int maxdistance){
+    /**
+     * Function checks if the cow has gotten too far from the beacon (keep in)
+     * Input: int maximum acceptable distance in a radius from the beacon
+     * Output: True if cow remains inside of the boundary distance, false if cow has exited the boundary.
+     */
+    if(maxdistance > distance){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool nanotag::temptoocool(int lowtemp){
+    /**
+     * Function provides a check for if last read temp has fallen below saftey value.
+     * Input: int for the saftey low temperature
+     * Output: true if temperature is in safe range, false if temperature is too low
+     */
+    if(lowtemp < temperature){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool nanotag::temptoohot(int hightemp){
+    /**
+     * Function provides a check for if last read temp has risen above saftey value.
+     * Input: int for the saftey high temperature
+     * Output: true if temperature is in safe range, false if temperature is too high
+     */
+    if(hightemp < temperature){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
