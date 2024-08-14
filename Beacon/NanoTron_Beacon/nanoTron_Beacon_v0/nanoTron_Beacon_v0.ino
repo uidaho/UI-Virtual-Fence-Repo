@@ -67,6 +67,7 @@ void loop() {
   }
   Serial2.println();
   //0.11&1/2 remove tags specified in 0.5.1
+  //rather than remove the tags from the all_tags list we simply idicate that the index is available and when we get a new tag we overwrite it.
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
 
 }

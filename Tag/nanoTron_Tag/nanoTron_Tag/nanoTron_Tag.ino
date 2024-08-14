@@ -1,13 +1,24 @@
 void setup() {
   //2.1 Initialize hardware
+  Serial.begin(115200);
+  Serial2.begin(115200);
+  Serial2.println("EDAN 1");
+  delay(1);
+  Serial2.println("EDNI 1");
+  Serial2.println("EBID 1");
 }
 
 void loop() {
   //2.2 if [On Network] == true
+  if(on_network == true){
     //2.2.1 Listen to radio
+    String message = radioListen();
     //2.2.2 if recieved message within [Timeout]
+    if(message != ""){
       //2.2.2.1 Decrypt message & set [Transmission Decay] to 0
-      //2.2.2.2 if message for us (Because CDMA broadcasts messages to all tags we can recieve a message with no content it it for us. Decoding a message like this should result in an empty message.)
+      String messageActual = decrypt(message);
+      //2.2.2.2 if message for us (Because CDMA broadcasts messages to all tags we can recieve a message with no content in it for us. Decoding a message like this should result in an empty message.)
+        if(messageActual != "00000000"){//this is what a message with no content looks like
         //2.2.2.2.1 set [Sleep Time] based on message
         //2.2.2.2.2 if message is warning
           //2.2.2.2.2.1 Increment [warnings] by 1
@@ -20,12 +31,16 @@ void loop() {
         //2.2.2.2.3 if message is reset
           //2.2.2.3.1 set [warnings] to 0
         //2.2.2.2.4 go to 2.5
+        }
       //2.2.2.3 go to 2.5
+    }
     //2.2.3 Increment [Transmission Decay] by 1
     //2.2.4 if [Transmission Decay] > 10
       //2.2.4.1 set [On Network] false
     //2.2.5 go to 2.5
+  }
   //2.3 Listen to Radio
+  String message = radioListen();
   //2.4 if any network traffic is detected
     //2.4.1 Transmit addition message
     //2.4.2 Listen to Radio
@@ -33,4 +48,22 @@ void loop() {
       //2.4.3.1 set [Encryption Key] based on message
       //2.4.3.2 set [On Network] true
   //2.5 Sleep for [sleep time]
+}
+
+String radioListen(){
+  char c;
+  String reading = "";
+  int listenStart = millis();
+  while(millis() < listenStart+timeout){
+    while(Serial2.available()){
+      c = Serial2.read();
+      reading += c;
+    }
+  }
+
+  return reading;
+}
+
+String decrypt(String message){
+  
 }
