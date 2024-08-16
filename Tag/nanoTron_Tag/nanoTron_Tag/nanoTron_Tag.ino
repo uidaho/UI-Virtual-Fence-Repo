@@ -1,3 +1,5 @@
+#include "tag_settings.h"
+
 void setup() {
   //2.1 Initialize hardware
   Serial.begin(115200);
@@ -20,34 +22,77 @@ void loop() {
       //2.2.2.2 if message for us (Because CDMA broadcasts messages to all tags we can recieve a message with no content in it for us. Decoding a message like this should result in an empty message.)
         if(messageActual != "00000000"){//this is what a message with no content looks like
         //2.2.2.2.1 set [Sleep Time] based on message
+        if(messageActual.substring(0,3) == "1001"){
+          sleep_time = 2000;
+        }
+        else if(messageActual.substring(0,3) == "1010"){
+          sleep_time = 4000;
+        }
+        else if(messageActual.substring(0,3) == "1100"){
+          sleep_time = 6000;
+        }
         //2.2.2.2.2 if message is warning
+        if(messageActual.substring(4,7) == "1111"){
           //2.2.2.2.2.1 Increment [warnings] by 1
+          warnings++;
           //2.2.2.2.2.2 if [warnings] >= 1 && [warnings <= 10]
+          if(warnings >= 1 && warnings <=10){
             //2.2.2.2.2.2.1 Beep
+            Beep();
             //2.2.2.2.2.2.2 if [warnings] > 5
+            if(warnings > 5){
               //2.2.2.2.2.2.2.1 Shock
+              Shock();
+            }
             //2.2.2.2.2.2.3 go to 2.5
+          }
           //2.2.2.2.2.3 go to 2.5
+        }
         //2.2.2.2.3 if message is reset
+        else if(messageActual.substring(4,7) == "1000"){
           //2.2.2.3.1 set [warnings] to 0
+
+        }
         //2.2.2.2.4 go to 2.5
         }
       //2.2.2.3 go to 2.5
     }
+    else{
     //2.2.3 Increment [Transmission Decay] by 1
+      transmission_decay++;
     //2.2.4 if [Transmission Decay] > 10
+      if(transmission_decay > 10){
       //2.2.4.1 set [On Network] false
+        on_network = false;
+      }
+    }
     //2.2.5 go to 2.5
   }
+  else{
   //2.3 Listen to Radio
   String message = radioListen();
   //2.4 if any network traffic is detected
+    if(message != ""){
     //2.4.1 Transmit addition message
+    Serial2.print("SDAT 0 ");
+    Serial2.print(message.substring(5,16));
+    Serial2.println(" 01 00");
     //2.4.2 Listen to Radio
+    String message = radioListen();
     //2.4.3 if recieved encryption message within [timeout]
+    if(message != ""){
       //2.4.3.1 set [Encryption Key] based on message
+      int encryption_index = message.substring(22,24).toInt();
+      for(int i=0; i<32; i++){
+        encryption_key[i] = encryption_key_table[encryption_index][i];
+      }
       //2.4.3.2 set [On Network] true
+      on_network = true;
+    }
+    }
+  }
   //2.5 Sleep for [sleep time]
+  Sleep(sleep_time);
 }
 
 String radioListen(){
@@ -65,5 +110,17 @@ String radioListen(){
 }
 
 String decrypt(String message){
+  
+}
+
+void Beep(){
+  
+}
+
+void Shock(){
+  
+}
+
+void Sleep(int t){
   
 }

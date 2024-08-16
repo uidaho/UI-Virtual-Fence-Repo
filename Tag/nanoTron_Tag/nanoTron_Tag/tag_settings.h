@@ -39,6 +39,39 @@ By: Andrew Carefoot, Jacob Karl
 int warnings = 0; //the controling component of tag mechanics. Our behavior changes depending on how manny of these we have.
 bool on_network = false; //control variable that detemines whether or not we perform ranging or searching
 int sleep_time = 490; //how long we sleep for in mS
-int[32] encryption_key; //the 32-bit encryption key we use to decode messages. Empty by default, set when we recieve an encryption message
+int encryption_key[32]; //the 32-bit encryption key we use to decode messages. Empty by default, set when we recieve an encryption message
+int encryption_key_table[32][32] = //a set of 32 orthoganal binary encryption codes (Walsh matricies, maybe, I need to look into this).
+              {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+               {1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1 },
+               {1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1,  1,  1, -1, -1},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {},
+               {}};
 int transmission_decay = 0; //counts the number of times we listen for a message but don't recieve one. Once we reach a threshold set on_network to false
 int timeout = 500; //how long we should wait to recieve a message in mS
