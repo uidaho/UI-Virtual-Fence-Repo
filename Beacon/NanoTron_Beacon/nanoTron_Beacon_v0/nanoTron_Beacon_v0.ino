@@ -67,9 +67,26 @@ void loop() {
   }
   Serial2.println();
   //0.11&1/2 remove tags specified in 0.5.1
-  //rather than remove the tags from the all_tags list we simply idicate that the index is available and when we get a new tag we overwrite it.
+  Tag newAllTags[32];
+  int removedTagItter = 0;
+  for(int i=0; i<32; i++){
+    if(i = indexes_of_all_removed_tags[removedTagItter]){
+      removedTagItter++;
+      number_of_tags--;
+    }
+    else{
+      newAllTags[i-removedTagItter] = all_tags[i];
+    }
+  }
+  int min_cool = -1;
+  for(int i=0; i<number_of_tags; i++){
+    all_tags[i] = newAllTags[i];
+    if(all_tags[i].cooldown_timestamp < min_cool && all_tags[i].cooldown_timestamp > -1){
+      min_cool = all_tags[i].cooldown_timestamp;
+    }
+  }
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
-
+  Sleep(min_cool - millis());
 }
 
 //This is the interupt function that we call when we recieve a transmission
@@ -123,4 +140,8 @@ int getTag(String getID){
       return i;
     }
   }
+}
+
+void Sleep(int sleep_time){
+  
 }

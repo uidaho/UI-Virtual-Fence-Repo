@@ -51,7 +51,7 @@ void loop() {
         //2.2.2.2.3 if message is reset
         else if(messageActual.substring(4,7) == "1000"){
           //2.2.2.3.1 set [warnings] to 0
-
+          warnings = 0;
         }
         //2.2.2.2.4 go to 2.5
         }
