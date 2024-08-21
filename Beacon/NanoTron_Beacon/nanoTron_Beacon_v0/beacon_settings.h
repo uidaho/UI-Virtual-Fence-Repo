@@ -41,16 +41,6 @@ By: Matthew Shryock, Jacob Karl
 #define ANALOGAUX4 A11
 #define ANALOGAUX5 A12
 
-//Structures to allow int arrays to be passed and returned from functions easier. Mostly used in the CDMA functions.
-struct array8 {
-  int array[8];
-};
-struct array32{
-  int array[32];
-};
-struct array256{
-  int array[256];
-};
 
 struct Tag {
   String ID; //the unique ID of this tag
@@ -66,7 +56,7 @@ Tag all_tags[32]; //a list of tag structures that constitutes all of the tags on
 //^^ It might be worth using a linked list instead of an array.
 int indexes_of_all_cool_tags[32]; //a list of indexes for all_tags that contains tags with cooldown_timestamp < current time.
 int indexes_of_all_removed_tags[32]; //a list of indexes for all_tags for tags that need to be removed. maybe temporary see comment under all_tags.
-array256 message; //the CDMA encoded message that we broadcast at the end of the main loop.
+int message[256]; //the CDMA encoded message that we broadcast at the end of the main loop.
 int encryption_key_table[32][32] = //a set of 32 orthoganal binary encryption codes (Walsh matricies, maybe, I need to look into this).
               {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
                {1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1 },

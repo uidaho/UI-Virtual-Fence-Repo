@@ -110,7 +110,37 @@ String radioListen(){
 }
 
 String decrypt(String message){
-  
+  int messageInt[256];
+  int patternedMessage[256];
+  int decodedMessage[8];
+  for(int i=0; i<message.length(); i++){
+    messageInt[i] = message.charAt(i) - '0'; // the (- '0') is supposed to convert a character to an integer
+  }
+  int keyItter = 0;
+  for(int i=0; i<256; i++){
+    if(keyItter >= 32){
+      keyItter = 0;
+    }
+    patternedMessage[i] = messageInt[i]*encryption_key[keyItter];
+    keyItter++;
+  }
+  for(int i=0; i<8; i++){
+    int messageChunk = 0;
+    for(int j=0; j<32; j++){
+      messageChunk = messageChunk + patternedMessage[(i*32)+j];
+    }
+    decodedMessage[i] = messageChunk;
+  }
+  String messageFinal = "";
+  for(int i=0; i<8; i++){
+    if(decodedMessage[i] > 0){
+      messageFinal = messageFinal + "1";
+    }
+    else{
+      messageFinal = messageFinal + "0";
+    }
+  }
+  return messageFinal;
 }
 
 void Beep(){

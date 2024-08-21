@@ -62,8 +62,8 @@ void loop() {
   //0.10 broadcast [Message] & 0.11 clear [Message]
   Serial2.print("BDAT 0 ff ");
   for(int i=0; i<256; i++){
-    Serial2.print(message.array[i]);
-    message.array[i] = 0;
+    Serial2.print(message[i]);
+    message[i] = 0;
   }
   Serial2.println();
   //0.11&1/2 remove tags specified in 0.5.1
@@ -129,6 +129,24 @@ void txRecieve(){
 
 //This is the function that CDMA encodes messages and adds them to the global [message].
 void encodeAndQueue(int key[32], int new_message[8]){
+  //encode the message (change all the 0's to -1's)
+  int encoded_message[8];
+  for(int i=0; i<8; i++){
+    encoded_message[i] = 2*new_message[i]-1;
+  }
+
+  //get the kronecker producto of the encoded message and the key
+  int kronecker_message[256];
+  for(int i=0; i<8; i++){
+    for(int j=0; j<32; j++){
+      kronecker_message[(i*32)+j] = key[j]*encoded_message[i];
+    }
+  }
+
+  //add the kroneckered message to the global message
+  for(int i=0; i<256; i++){
+    message[i] = message[i] + kronecker_message[i];
+  }
 
 }
 
