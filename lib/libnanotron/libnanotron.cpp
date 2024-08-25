@@ -5,10 +5,25 @@ Library to wrap nanotron functionality.
 */
 #include "libnanotron.hpp"
 
+
+nanotron::nanobeacon(){
+    ///Constructor for the nanobeacon using its default ID.
+    ID = read_my_radio_id();
+    uid=ID;
+    return;
+}
+
+nanotron::nanobeacon(String selfid){
+    ///Constructor for the nanobeacon if setting a new ID.
+    uid=selfid;
+    ID = read_my_radio_id();
+    return;
+}
+
 /// @brief This function provides ranges for the nanotron.
 /// @param tag_id The desired tag to range with
 /// @return The range of the tag from the beacon in cm
-int range(String tag_id){
+int nanotron::range(String tag_id){
   String ranging = "rato 0 ";
   ranging += tag_id;
   String reading = "";
@@ -28,7 +43,7 @@ int range(String tag_id){
 
 /// @brief Gets node voltage from nanotron ADC and processes into a double per nanotron documentation.
 /// @return a double representing node voltage.
-double read_my_input_voltage(){
+double nanotron::read_my_input_voltage(){
   Serial2.println("GBAT");
   String reading="";
   //TODO: does this fail if serial is not available?
@@ -41,6 +56,25 @@ double read_my_input_voltage(){
   node_voltage=node_voltage/10;
   return node_voltage;
 
+}
+
+String nanotron::read_my_radio_id(){
+  int query = 0;
+  String value = "";
+  Serial2.println("gnid");
+    while(Serial2.available()){
+        value +=  Serial2.read();
+    }
+    ID = value;
+    return ID
+}
+int nanotron::read_my_temperature(){
+  String value = "";
+  Serial2.println("gmyt");
+  while(Serial2.available()){
+    value += Serial2.read();
+  }
+  return value.toInt();//to double? 
 }
 
 
