@@ -19,6 +19,7 @@ class nanotron
 {
 private:
     String ID;
+    String uid;
     hardwaretype hardware;
 
 public:
@@ -29,10 +30,10 @@ public:
     bool setsettingself(int, String);
     int range(String tag_id);
     double read_my_input_voltage();
-
     int read_my_radio_id();
     int read_my_temperature();
-    int read_my_voltage();
+
+    
 };
 
 
