@@ -135,7 +135,7 @@ void encodeAndQueue(int key[32], int new_message[8]){
     encoded_message[i] = 2*new_message[i]-1;
   }
 
-  //get the kronecker producto of the encoded message and the key
+  //get the kronecker product of the encoded message and the key
   int kronecker_message[256];
   for(int i=0; i<8; i++){
     for(int j=0; j<32; j++){

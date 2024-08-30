@@ -2,6 +2,11 @@
 
 void setup() {
   //2.1 Initialize hardware
+  pinMode(SHOCK, OUTPUT);
+  digitalWrite(SHOCK, LOW);
+  pinMode(BUZZER, OUTPUT);
+  digitalWrite(BUZZER, LOW);
+  
   Serial.begin(115200);
   Serial2.begin(115200);
   Serial2.println("EDAN 1");
@@ -144,11 +149,18 @@ String decrypt(String message){
 }
 
 void Beep(){
-  
+  digitalWrite(BUZZER, HIGH);
+  delay(200);
+  digitalWrite(BUZZER, LOW);
 }
 
 void Shock(){
-  
+  digitalWrite(BOOSTEN, HIGH);
+  delay(10);
+  digitalWrite(SHOCK, HIGH);
+  delay(40);
+  digitalWrite(SHOCK, LOW);
+  digitalWrite(BOOSTEN, LOW);
 }
 
 void Sleep(int t){
