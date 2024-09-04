@@ -6,14 +6,14 @@ Library to wrap nanotron functionality.
 #include "libnanotron.hpp"
 
 
-nanotron::nanobeacon(){
+nanotron::nanotron(){
     ///Constructor for the nanobeacon using its default ID.
     ID = read_my_radio_id();
     uid=ID;
     return;
 }
 
-nanotron::nanobeacon(String selfid){
+nanotron::nanotron(String selfid){
     ///Constructor for the nanobeacon if setting a new ID.
     uid=selfid;
     ID = read_my_radio_id();
@@ -59,17 +59,15 @@ double nanotron::read_my_input_voltage(){
 }
 
 double nanotron::read_other_input_voltage(String OtherID){
-  output = "rato 0 " + OtherID;
+  String output = "rato 0 " + OtherID;
+  String value;
   Serial2.println(output);
   while(Serial2.available()){
-      ichar = Serial2.read();
-      value += ichar;
+      value += Serial2.read();
   }
-  temporary = value.substring(3,9);
-  query = temporary.toInt();
-  distance = query;
-  break;
-  return node_voltage;
+  String temporary = value.substring(3,9);
+
+  return temporary.toInt();
 
 }
 
@@ -81,9 +79,9 @@ String nanotron::read_my_radio_id(){
         value +=  Serial2.read();
     }
     ID = value;
-    return ID
+    return ID;
 }
-
+/*
 String nanotron::read_other_radio_id(String OtherID){
   String value = "";
   String temporary = "";
@@ -101,7 +99,8 @@ String nanotron::read_other_radio_id(String OtherID){
 
   return temporary;
 }
-
+*/
+/*
 int nanotron::read_my_temperature(){
   String value = "";
   Serial2.println("gmyt");
@@ -122,7 +121,6 @@ int nanotron::read_other_temperature(String OtherID){
       temporary = value.substring(31,34);
   }
   else{
-      temperature = 0;
       return temperature;
   }
   query = temporary.toInt();
@@ -130,7 +128,7 @@ int nanotron::read_other_temperature(String OtherID){
   break;
 }
 
-
+*/
 
 
 
