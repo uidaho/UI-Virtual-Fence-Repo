@@ -2,10 +2,11 @@ int walsh_key[256];
 
 void setup() {
   // put your setup code here, to run once:
+  Serial.begin(115200);
   for(int i=0; i<16; i++){
     Walsh_row(i,16);
     for(int j=0; j<16; j++){
-      Serial.print(walsh_key[j]+", ");
+      Serial.print(walsh_key[j]);
     }
     Serial.println();
   }
@@ -30,16 +31,15 @@ void loop() {
 //8|F  F  F  T
 
 void Walsh_row(int row, int height){
-  int wRow[height];
   //mod the row number to determ  ine whether we're reflecting the first or second row of the original
   //This is the first element that is always true. Because the fractal is square rows are reflections of either the first or second row of the seed.
-  if(row%2 == 1){
+  if(row%2 == 0){
     walsh_key[0] = 1;
     walsh_key[1] = 1;
   } else {
     walsh_key[0] = 1;
     walsh_key[1] = 0;
-  }  
+  }
   //Use logical operators to determine the truth value of each bit in sequence and reflect accordingly
   int bitGet = 1;
   int rowHalf = row/2;
@@ -48,18 +48,17 @@ void Walsh_row(int row, int height){
     //use bitGet to get the bit of rowHalf
     int rowBit = rowHalf & bitGet;
     if(rowBit == 0){//True reflection
-      for(int j=0; i<wRowPos; j++){
+      for(int j=0; j<wRowPos; j++){
         walsh_key[wRowPos+j] = walsh_key[j];
-        wRowPos = wRowPos*2;
       }
+      wRowPos = wRowPos * 2;
     }
     else{//False reflection
       for(int j=0; j<wRowPos; j++){
         walsh_key[wRowPos+j] = abs(walsh_key[j]-1);
-        wRowPos = wRowPos*2;
       }
+      wRowPos = wRowPos * 2;
     }
-    bitGet << 1;
+    bitGet = bitGet << 1;
   }
-  return &wRow;
 }
