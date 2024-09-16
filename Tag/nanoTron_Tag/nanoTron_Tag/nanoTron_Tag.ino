@@ -1,4 +1,7 @@
 #include "tag_settings.h"
+#include <SoftwareSerial.h>
+
+SoftwareSerial Serial2(2,3);
 
 void setup() {
   //2.1 Initialize hardware
@@ -88,9 +91,7 @@ void loop() {
     if(message != ""){
       //2.4.3.1 set [Encryption Key] based on message
       int encryption_index = message.substring(22,24).toInt();
-      for(int i=0; i<32; i++){
-        encryption_key[i] = encryption_key_table[encryption_index][i];
-      }
+      walshRow(encryption_index, 32);
       //2.4.3.2 set [On Network] true
       on_network = true;
     }
@@ -163,6 +164,39 @@ void Shock(){
   digitalWrite(BOOSTEN, LOW);
 }
 
-void Sleep(int t){
-  
+void Sleep(int sleep_time){
+  delay(sleep_time);
+}
+
+void walshRow(int row, int height){
+  //mod the row number to determine whether we're reflecting the first or second row of the original
+  //This is the first element that is always true. Because the fractal is square rows are reflections of either the first or second row of the seed.
+  if(row%2 == 0){
+    encryption_key[0] = 1;
+    encryption_key[1] = 1;
+  } else {
+    encryption_key[0] = 1;
+    encryption_key[1] = 0;
+  }
+  //Use logical operators to determine the truth value of each bit in sequence and reflect accordingly
+  int bitGet = 1;
+  int rowHalf = row/2;
+  int wRowPos = 2; //index of wRow
+  for(int i=0; i<sqrt(height); i++){
+    //use bitGet to get the bit of rowHalf
+    int rowBit = rowHalf & bitGet;
+    if(rowBit == 0){//True reflection
+      for(int j=0; j<wRowPos; j++){
+        encryption_key[wRowPos+j] = encryption_key[j];
+      }
+      wRowPos = wRowPos * 2;
+    }
+    else{//False reflection
+      for(int j=0; j<wRowPos; j++){
+        encryption_key[wRowPos+j] = abs(encryption_key[j]-1);
+      }
+      wRowPos = wRowPos * 2;
+    }
+    bitGet = bitGet << 1;
+  }
 }

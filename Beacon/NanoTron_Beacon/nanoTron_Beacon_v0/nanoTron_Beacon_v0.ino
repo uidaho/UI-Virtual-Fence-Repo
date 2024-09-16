@@ -1,4 +1,7 @@
 #include "beacon_settings.h"
+#include <SoftwareSerial.h>
+
+//SoftwareSerial Serial2(NANOTX,NANORX);
 
 void setup() {
   //0.1 Initialize hardware
@@ -161,5 +164,38 @@ int getTag(String getID){
 }
 
 void Sleep(int sleep_time){
-  
+  delay(sleep_time);
+}
+
+void walshRow(int row, int height, Tag t){
+  //mod the row number to determine whether we're reflecting the first or second row of the original
+  //This is the first element that is always true. Because the fractal is square rows are reflections of either the first or second row of the seed.
+  if(row%2 == 0){
+    t.encryption_key[0] = 1;
+    t.encryption_key[1] = 1;
+  } else {
+    t.encryption_key[0] = 1;
+    t.encryption_key[1] = 0;
+  }
+  //Use logical operators to determine the truth value of each bit in sequence and reflect accordingly
+  int bitGet = 1;
+  int rowHalf = row/2;
+  int wRowPos = 2; //index of wRow
+  for(int i=0; i<sqrt(height); i++){
+    //use bitGet to get the bit of rowHalf
+    int rowBit = rowHalf & bitGet;
+    if(rowBit == 0){//True reflection
+      for(int j=0; j<wRowPos; j++){
+        t.encryption_key[wRowPos+j] = t.encryption_key[j];
+      }
+      wRowPos = wRowPos * 2;
+    }
+    else{//False reflection
+      for(int j=0; j<wRowPos; j++){
+        t.encryption_key[wRowPos+j] = abs(t.encryption_key[j]-1);
+      }
+      wRowPos = wRowPos * 2;
+    }
+    bitGet = bitGet << 1;
+  }
 }

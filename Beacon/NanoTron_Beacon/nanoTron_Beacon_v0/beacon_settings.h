@@ -57,40 +57,6 @@ Tag all_tags[32]; //a list of tag structures that constitutes all of the tags on
 int indexes_of_all_cool_tags[32]; //a list of indexes for all_tags that contains tags with cooldown_timestamp < current time.
 int indexes_of_all_removed_tags[32]; //a list of indexes for all_tags for tags that need to be removed. maybe temporary see comment under all_tags.
 int message[256]; //the CDMA encoded message that we broadcast at the end of the main loop.
-int encryption_key_table[32][32] = //a set of 32 orthoganal binary encryption codes (Walsh matricies, maybe, I need to look into this).
-              {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-               {1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1 },
-               {1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, -1,  1,  1, -1, -1},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {},
-               {}};
-
 int warning_message[8] = {0,0,0,0,1,1,1,1};
 int reset_message[8] = {0,0,0,0,1,0,0,0};
 int sleep1[8] = {1,0,0,1,0,0,0,0};
