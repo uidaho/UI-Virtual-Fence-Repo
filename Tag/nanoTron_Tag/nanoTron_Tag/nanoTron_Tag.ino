@@ -1,7 +1,7 @@
 #include "tag_settings.h"
 #include <SoftwareSerial.h>
 
-SoftwareSerial Serial2(2,3);
+SoftwareSerial Serial2(0,1);
 
 void setup() {
   //2.1 Initialize hardware
@@ -77,24 +77,26 @@ void loop() {
     //2.2.5 go to 2.5
   }
   else{
+    Serial.println("Off Network");
   //2.3 Listen to Radio
-  String message = radioListen();
+    String message = radioListen();
+    Serial.println(message);
   //2.4 if any network traffic is detected
     if(message != ""){
-    //2.4.1 Transmit addition message
-    Serial2.print("SDAT 0 ");
-    Serial2.print(message.substring(5,16));
-    Serial2.println(" 01 00");
-    //2.4.2 Listen to Radio
-    String message = radioListen();
-    //2.4.3 if recieved encryption message within [timeout]
-    if(message != ""){
-      //2.4.3.1 set [Encryption Key] based on message
-      int encryption_index = message.substring(22,24).toInt();
-      walshRow(encryption_index, 32);
-      //2.4.3.2 set [On Network] true
-      on_network = true;
-    }
+      //2.4.1 Transmit addition message
+      Serial2.print("SDAT 0 ");
+      Serial2.print(message.substring(5,16));
+      Serial2.println(" 01 00");
+      //2.4.2 Listen to Radio
+      String message = radioListen();
+      //2.4.3 if recieved encryption message within [timeout]
+      if(message != ""){
+        //2.4.3.1 set [Encryption Key] based on message
+        int encryption_index = message.substring(22,24).toInt();
+        walshRow(encryption_index, 32);
+        //2.4.3.2 set [On Network] true
+        on_network = true;
+      }
     }
   }
   //2.5 Sleep for [sleep time]
@@ -107,6 +109,7 @@ String radioListen(){
   int listenStart = millis();
   while(millis() < listenStart+timeout){
     while(Serial2.available()){
+      Serial.print("x");
       c = Serial2.read();
       reading += c;
     }

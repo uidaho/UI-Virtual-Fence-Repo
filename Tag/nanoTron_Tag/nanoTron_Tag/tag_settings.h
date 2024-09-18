@@ -15,9 +15,9 @@ By: Andrew Carefoot, Jacob Karl
 
 //nanotron communication pins
 #define NANORST 10
-#define NANOUSARTRX 7  //serial communication from nanotron
-#define NANOUSARTTX 8  //serial communication to nanotron
-#define NANOENABLE A3
+#define NANOUSARTRX 0  //serial communication from nanotron
+#define NANOUSARTTX 1  //serial communication to nanotron
+#define NANOENABLE 2
 
 //ftdi hardware serial comms
 #define FTDIRX 0  //recieving from ftdi comms

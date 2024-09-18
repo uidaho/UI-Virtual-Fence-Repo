@@ -63,17 +63,20 @@ void loop() {
     }
   }
   //0.10 broadcast [Message] & 0.11 clear [Message]
+  Serial.print("Broadcasting: ");
   Serial2.print("BDAT 0 ff ");
   for(int i=0; i<256; i++){
     Serial2.print(message[i]);
+    Serial.print(message[i]);
     message[i] = 0;
   }
   Serial2.println();
+  Serial.println();
   //0.11&1/2 remove tags specified in 0.5.1
   Tag newAllTags[32];
   int removedTagItter = 0;
   for(int i=0; i<32; i++){
-    if(i = indexes_of_all_removed_tags[removedTagItter]){
+    if(i == indexes_of_all_removed_tags[removedTagItter]){
       removedTagItter++;
       number_of_tags--;
     }
@@ -81,19 +84,23 @@ void loop() {
       newAllTags[i-removedTagItter] = all_tags[i];
     }
   }
-  int min_cool = -1;
-  for(int i=0; i<number_of_tags; i++){
+  Serial.println("Disconected Tags Removed");
+  int min_cool = 100;
+  for(int i=0; i<=number_of_tags; i++){
     all_tags[i] = newAllTags[i];
     if(all_tags[i].cooldown_timestamp < min_cool && all_tags[i].cooldown_timestamp > -1){
       min_cool = all_tags[i].cooldown_timestamp;
     }
   }
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
-  Sleep(min_cool - millis());
+  Serial.print("Sleep Duration: ");
+  Serial.println(min_cool);
+  Sleep(min_cool);
 }
 
 //This is the interupt function that we call when we recieve a transmission
 void txRecieve(){
+  Serial.println("Interupt Triggered");
   //1.1 read transmission
   char c;
   String reading = "";
