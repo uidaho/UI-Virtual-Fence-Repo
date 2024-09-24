@@ -81,54 +81,7 @@ String nanotron::read_my_radio_id(){
     ID = value;
     return ID;
 }
-/*
-String nanotron::read_other_radio_id(String OtherID){
-  String value = "";
-  String temporary = "";
-  String command = "sdat 0 " + OtherID + " 9 081255540254000100";
-  Serial2.println(command);
-  while(Serial2.available()){
-    value += Serial2.read();
-  }
-  //Serial.println(value);
-  temporary = value.substring(4,8);
-  if(temporary == "*AIR"){
-    temporary = value.substring(31,43);
-    //Serial.println(temporary);
-  }
 
-  return temporary;
-}
-*/
-/*
-int nanotron::read_my_temperature(){
-  String value = "";
-  Serial2.println("gmyt");
-  while(Serial2.available()){
-    value += Serial2.read();
-  }
-  return value.toInt();//to double? 
-}
-int nanotron::read_other_temperature(String OtherID){
-  output = "sdat 0 " + ID + " 9 081255540254000158";
-  Serial2.println(output);
-  while(Serial2.available()){
-      ichar = Serial2.read();
-      value += ichar;
-  }
-  temporary = value.substring(4,8);
-  if(temporary == "*AIR"){
-      temporary = value.substring(31,34);
-  }
-  else{
-      return temperature;
-  }
-  query = temporary.toInt();
-  temperature = query;
-  break;
-}
-
-*/
 
 
 

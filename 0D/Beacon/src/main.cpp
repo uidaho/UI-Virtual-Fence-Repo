@@ -16,7 +16,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(30,!digitalRead(30));
-  my_nanotron.read_other_input_voltage();
+  digitalWrite(30,!digitalRead(30));//Blink to show I'm alive
+  my_nanotron.read_other_input_voltage(OtherID);
   delay(1000);
 }
