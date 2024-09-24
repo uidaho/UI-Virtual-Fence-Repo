@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include "libnanotron.hpp"
 
 // put function declarations here:
@@ -6,17 +5,13 @@
 nanotron my_nanotron;
 String OtherID="";
 void setup() {
-  // put your setup code here, to run once:
-  pinMode(30,OUTPUT);
-  pinMode(31,OUTPUT);
-  pinMode(32,OUTPUT);
-  pinMode(33,OUTPUT);
+  beacon_init();
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(30,!digitalRead(30));//Blink to show I'm alive
+  digitalWrite(LED1,!digitalRead(LED1));//Blink to show I'm alive
   my_nanotron.read_other_input_voltage(OtherID);
   delay(1000);
 }
