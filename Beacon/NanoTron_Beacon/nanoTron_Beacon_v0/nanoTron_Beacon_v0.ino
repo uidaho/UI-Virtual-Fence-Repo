@@ -5,6 +5,8 @@
 
 void setup() {
   //0.1 Initialize hardware
+  pinMode(NANORX, INPUT);
+  
   Serial.begin(115200);
   Serial2.begin(115200);
   Serial2.println("SNID 000000000001");

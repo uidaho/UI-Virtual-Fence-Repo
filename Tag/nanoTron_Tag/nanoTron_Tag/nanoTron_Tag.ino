@@ -1,7 +1,7 @@
 #include "tag_settings.h"
 #include <SoftwareSerial.h>
 
-SoftwareSerial Serial2(0,1);
+//SoftwareSerial Serial2(0,1);
 
 void setup() {
   //2.1 Initialize hardware
@@ -21,6 +21,7 @@ void setup() {
 void loop() {
   //2.2 if [On Network] == true
   if(on_network == true){
+    Serial.println("On Network");
     //2.2.1 Listen to radio
     String message = radioListen();
     //2.2.2 if recieved message within [Timeout]
@@ -83,10 +84,15 @@ void loop() {
     Serial.println(message);
   //2.4 if any network traffic is detected
     if(message != ""){
+      Serial.println("Message Recieved");
       //2.4.1 Transmit addition message
       Serial2.print("SDAT 0 ");
       Serial2.print(message.substring(5,16));
       Serial2.println(" 01 00");
+      
+      Serial.print("SDAT 0 ");
+      Serial.print(message.substring(5,16));
+      Serial.println(" 01 00");
       //2.4.2 Listen to Radio
       String message = radioListen();
       //2.4.3 if recieved encryption message within [timeout]
@@ -109,12 +115,12 @@ String radioListen(){
   int listenStart = millis();
   while(millis() < listenStart+timeout){
     while(Serial2.available()){
-      Serial.print("x");
       c = Serial2.read();
       reading += c;
+      delay(1);
     }
   }
-
+  Serial.println(reading);
   return reading;
 }
 

@@ -15,8 +15,8 @@ By: Andrew Carefoot, Jacob Karl
 
 //nanotron communication pins
 #define NANORST 10
-#define NANOUSARTRX 0  //serial communication from nanotron
-#define NANOUSARTTX 1  //serial communication to nanotron
+#define NANOUSARTRX 17  //serial communication from nanotron
+#define NANOUSARTTX 16  //serial communication to nanotron
 #define NANOENABLE 2
 
 //ftdi hardware serial comms
@@ -28,9 +28,9 @@ By: Andrew Carefoot, Jacob Karl
 #define GPSTX 4
 
 //shock circuit pins
-#define SHOCK 3
-#define BOOSTEN 2  //shock charge enable
-#define BUZZER 5
+#define SHOCK 30
+#define BOOSTEN 31  //shock charge enable
+#define BUZZER 32
 
 //baudrate definitions
 #define NANOBAUD 115200
