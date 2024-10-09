@@ -66,3 +66,5 @@ int sleep4[8] = {1,1,0,0,0,0,0,0};
                
 int max_communication_attempts = 10; //the number of times we will try and communicate with a tag before we remove it from the network.
 int number_of_tags = 0; //How many tags are on the network. Also serves as an index for the end of all_tags[].
+
+String dataLog = ""; //The contents of this get written to long-term memory at the end of the major loop.

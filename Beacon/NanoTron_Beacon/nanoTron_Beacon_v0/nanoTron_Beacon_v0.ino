@@ -1,11 +1,17 @@
 #include "beacon_settings.h"
 #include <SoftwareSerial.h>
+#include <SPI.h>
+#include <SPIFlash.h>
+
+SPIFlash flash(FLASHCS, 0xEF40);
 
 //SoftwareSerial Serial2(NANOTX,NANORX);
 
 void setup() {
   //0.1 Initialize hardware
   pinMode(NANORX, INPUT);
+  pinMode(FLASHCS,OUTPUT);
+  digitalWrite(FLASHCS, LOW);
   
   Serial.begin(115200);
   Serial2.begin(115200);
@@ -26,15 +32,18 @@ void loop() {
       numberOfCoolTags++;
     }
   }
+  dataLog = millis() + ":";
   //0.3 for [tag] in [all cool tags]
   for(int i=0; i<numberOfCoolTags; i++){
     //0.4 increase [tag.communication attempts] by 1
     all_tags[indexes_of_all_cool_tags[i]].communication_attempts++;
+    dataLog = dataLog + all_tags[indexes_of_all_cool_tags[i]].ID;
     //0.5 if [tag.communication attempts] > [max communication attempts]
     if(all_tags[indexes_of_all_cool_tags[i]].communication_attempts > max_communication_attempts){
       //0.5.1 remove [tag] from [all tags] and go to 0.8
       //Actually queue tags to be removed from the master list. Removing them now will mess up the rest of the loops.
       indexes_of_all_removed_tags[i] = indexes_of_all_cool_tags[i];
+      dataLog = dataLog + ":" + all_tags[indexes_of_all_cool_tags[i]].distance + ": Tag Removed, ";
     }
     //0.6 if [tag.distance]<=[boundary]&&[tag.distance]>0
     else if (all_tags[indexes_of_all_cool_tags[i]].distance <= boundary && all_tags[indexes_of_all_cool_tags[i]].distance > 0){
@@ -42,12 +51,17 @@ void loop() {
       encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, warning_message);
       //0.6.2 set [tag.warning flag] true and go to 0.8
       all_tags[indexes_of_all_cool_tags[i]].warning_flag = true;
+      dataLog = dataLog + ":" + all_tags[indexes_of_all_cool_tags[i]].distance + ": Warning, ";
     }
     //0.7 if [tag.warning flag] == true
     else if(all_tags[indexes_of_all_cool_tags[i]].warning_flag == true){
       //0.7.1 {encode and queue} reset message and go to 0.8
       encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, reset_message);
       all_tags[indexes_of_all_cool_tags[i]].warning_flag = false;
+      dataLog = dataLog + ":" + all_tags[indexes_of_all_cool_tags[i]].distance + ": Reset, ";
+    }
+    else {
+      dataLog = dataLog + ":" + all_tags[indexes_of_all_cool_tags[i]].distance + ": No Action, ";
     }
     //0.8 calculate [tag.cooldown timestamp] based on [tag.distance] & 0.9 {encode and queue} sleep message based on [tag.cooldown timestamp]
     //This math is a bit paper-napkin, but a cow has a 25mph dead sprint which is about 73 ft in 2 sec, 73ft is about 22m, and round up to 25m to give some cushion/make the number prettier
