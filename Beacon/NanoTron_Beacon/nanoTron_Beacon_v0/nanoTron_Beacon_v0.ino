@@ -2,6 +2,7 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 #include <SPIFlash.h>
+#include <EEPROM.h>
 
 SPIFlash flash(FLASHCS, 0xEF40);
 
@@ -11,7 +12,7 @@ void setup() {
   //0.1 Initialize hardware
   pinMode(NANORX, INPUT);
   pinMode(FLASHCS,OUTPUT);
-  digitalWrite(FLASHCS, LOW);
+  digitalWrite(FLASHCS, HIGH);
   
   Serial.begin(115200);
   Serial2.begin(115200);
@@ -78,6 +79,25 @@ void loop() {
       encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, sleep4);      
     }
   }
+  //Write datalog to Flash
+  dataLog = dataLog + "\n";
+  if (last_address < 16777000){  // W25Q128JV Flash memroy 128Mbits = 16 MB = 16*2^20 = 16777216 Bytes // Rounding down to 1000
+      char cMsg[dataLog.length()]; //Copy all of it to keep one \n. str_len-1 will not copy \n
+      dataLog.toCharArray(cMsg,dataLog.length());
+      digitalWrite(FLASHCS, LOW); // Turnon Flash
+      
+      flash.writeBytes(last_address, &cMsg,dataLog.length()-1); //sMsg.length() is null Character
+      while(flash.busy());
+      last_address += dataLog.length()-1; 
+      EEPROM.put(6, last_address);  
+
+      digitalWrite(FLASHCS, HIGH); // Turn OFF Flash
+      
+    }
+    else{
+      Serial.print("Memory full");
+    }
+  
   //0.10 broadcast [Message] & 0.11 clear [Message]
   Serial.print("Broadcasting: ");
   Serial2.print("BDAT 0 ff ");
