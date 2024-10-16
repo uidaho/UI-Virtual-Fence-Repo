@@ -25,17 +25,23 @@ void setup() {
 }
 
 void loop() {
-  if(false){ //condition to get memory read
-    digitalWrite(Flashpin, LOW); 
-    for(int i = 0; i < Last_Address; i++){
-      Serial.write(flash.readByte(i));
+  char buff[32];
+  int i=0;
+  while(Serial.available()){
+    buff[i]=Serial.read();
+    i++;
+    if(buff == "read"){
+      digitalWrite(Flashpin, LOW); 
+      for(int i = 0; i < Last_Address; i++){
+        Serial.write(flash.readByte(i));
+      }
+      Last_Address = 0; 
+      EEPROM.write(0,0xaa);
+      EEPROM.put(6,Last_Addres);
+      flash.chipErase();
+      while(flash.busy()){};
+      digitalWrite(Flashpin, HIGH);
     }
-    Last_Address = 0; 
-    EEPROM.write(0,0xaa);
-    EEPROM.put(6,Last_Addres);
-    flash.chipErase();
-    while(flash.busy()){};
-    digitalWrite(Flashpin, HIGH);
   }
   }
   //0.2 get [all tags] with cooldown <= present time
