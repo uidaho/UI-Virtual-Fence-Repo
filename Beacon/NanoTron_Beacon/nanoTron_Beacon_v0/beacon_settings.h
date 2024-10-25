@@ -41,7 +41,6 @@ By: Matthew Shryock, Jacob Karl
 #define ANALOGAUX4 A11
 #define ANALOGAUX5 A12
 
-
 struct Tag {
   String ID; //the unique ID of this tag
   float distance = -1; //the distance of the tag from the boundary when we ranged it last in cmd. Initialized to -1 to prevent us from warning a tag that just entered the network.
