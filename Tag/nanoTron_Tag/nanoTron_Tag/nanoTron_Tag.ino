@@ -118,15 +118,17 @@ String radioListen(){
       c = Serial2.read();
       reading += c;
       delay(1);
+      if(c == '\n'){
+        return reading;
+      }
     }
   }
-  Serial.println(reading);
   return reading;
 }
 
 String decrypt(String message){
-  int messageInt[256];
-  int patternedMessage[256];
+  int messageInt[128];
+  int patternedMessage[128];
   int decodedMessage[8];
   for(int i=0; i<message.length(); i++){
     messageInt[i] = message.charAt(i) - '0'; // the (- '0') is supposed to convert a character to an integer

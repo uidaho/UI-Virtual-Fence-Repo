@@ -55,13 +55,13 @@ Tag all_tags[32]; //a list of tag structures that constitutes all of the tags on
 //^^ It might be worth using a linked list instead of an array.
 int indexes_of_all_cool_tags[32]; //a list of indexes for all_tags that contains tags with cooldown_timestamp < current time.
 int indexes_of_all_removed_tags[32]; //a list of indexes for all_tags for tags that need to be removed. maybe temporary see comment under all_tags.
-int message[256]; //the CDMA encoded message that we broadcast at the end of the main loop.
-int warning_message[8] = {0,0,0,0,1,1,1,1};
-int reset_message[8] = {0,0,0,0,1,0,0,0};
-int sleep1[8] = {1,0,0,1,0,0,0,0};
-int sleep2[8] = {1,0,1,0,0,0,0,0};
-int sleep3[8] = {1,0,1,1,0,0,0,0};
-int sleep4[8] = {1,1,0,0,0,0,0,0};
+int message[128]; //the CDMA encoded message that we broadcast at the end of the main loop.
+int warning_message[4] = {0,0,1,1};
+int reset_message[4] = {0,0,1,0};
+int sleep1[4] = {0,0,0,0};
+int sleep2[4] = {0,1,0,0};
+int sleep3[4] = {1,0,0,0};
+int sleep4[4] = {1,1,0,0};
                
 int max_communication_attempts = 10; //the number of times we will try and communicate with a tag before we remove it from the network.
 int number_of_tags = 0; //How many tags are on the network. Also serves as an index for the end of all_tags[].

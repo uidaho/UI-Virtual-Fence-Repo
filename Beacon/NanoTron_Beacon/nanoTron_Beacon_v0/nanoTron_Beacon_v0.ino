@@ -6,13 +6,11 @@
 
 SPIFlash flash(FLASHCS, 0xEF40);
 
-void txRecieve();
-
 //SoftwareSerial Serial2(NANOTX,NANORX);
 
 //Function Prototypes
 void txRecieve();
-void encodeAndQueue(int key[32], int new_message[8]);
+void encodeAndQueue(int key[32], int new_message[4]);
 int getTag(String getID);
 void Sleep(int sleep_time);
 void walshRow(int row, int height, Tag t);
@@ -52,7 +50,6 @@ void loop() {
       digitalWrite(FLASHCS, HIGH);
     }
   }
-
   //0.2 get [all tags] with cooldown <= present time
   int numberOfCoolTags = 0;
   for (int i = 0; i < number_of_tags; i++) {
@@ -110,7 +107,7 @@ void loop() {
 
   //Write datalog to Flash
   dataLog = dataLog + "\n";
-  if (last_address < 16777000) { // W25Q128JV Flash memroy 128Mbits = 16 MB = 16*2^20 = 16777216 Bytes // Rounding down to 1000
+  /*if (last_address < 16777000) { // W25Q128JV Flash memroy 128Mbits = 16 MB = 16*2^20 = 16777216 Bytes // Rounding down to 1000
     char cMsg[dataLog.length()]; //Copy all of it to keep one \n. str_len-1 will not copy \n
     dataLog.toCharArray(cMsg, dataLog.length());
     digitalWrite(FLASHCS, LOW); // Turnon Flash
@@ -125,18 +122,30 @@ void loop() {
   }
   else {
     Serial.print("Memory full");
-  }
-
+  }*/
+  dataLog = ""; // clear dataLog
+  Serial.println("here");
   //0.10 broadcast [Message] & 0.11 clear [Message]
   Serial.print("Broadcasting: ");
-  Serial2.print("BDAT 0 ff ");
-  for (int i = 0; i < 256; i++) {
+  Serial2.print("BDAT 0 40 ");
+  Serial.print("BDAT 0 40 ");
+  for (int i = 0; i < 128; i++) {
     Serial2.print(message[i]);
     Serial.print(message[i]);
     message[i] = 0;
   }
   Serial2.println();
   Serial.println();
+  
+  if (Serial2.available())
+  {
+    while(Serial2.available())
+    {
+      Serial.write(Serial2.read());
+      delay(1);//stops messages from getting sliced.
+    }
+    Serial.println();
+  }
   //0.11&1/2 remove tags specified in 0.5.1
   Tag newAllTags[32];
   int removedTagItter = 0;
@@ -150,13 +159,52 @@ void loop() {
     }
   }
   Serial.println("Disconected Tags Removed");
-  int min_cool = 100;
+  int min_cool = 500;
   for (int i = 0; i <= number_of_tags; i++) {
     all_tags[i] = newAllTags[i];
     if (all_tags[i].cooldown_timestamp < min_cool && all_tags[i].cooldown_timestamp > -1) {
       min_cool = all_tags[i].cooldown_timestamp;
     }
   }
+//-------------------------------------------------------------------
+
+  //1.1 read transmission
+  char c;
+  String reading = "";
+  while (Serial2.available()) {
+    c = Serial2.read();
+    reading += c;
+  }
+  Serial.println(reading);
+  //1.2 if transmission is a ranging result
+  if (reading.substring(0, 3) == "*RRN") {
+    //1.2.1 update [tag.distance] for relavant [tag] and go to 1.4
+    all_tags[getTag(reading.substring(5, 16))].distance = reading.substring(33, 38).toInt();
+  }
+  //1.3 if transmission is a new tag message
+  else if (reading.substring(0, 3) == "*DNO") {
+    //1.3.1 create [tag] object with transmitted ID and add [tag] to [all tags]
+    String newID = reading.substring(4);
+    Tag newTag;
+    newTag.ID = newID;
+    number_of_tags++;
+    all_tags[number_of_tags] = newTag;
+
+    //1.3.2 direct transmit encryption key message
+    Serial2.print("SDAT 0 ");
+    Serial2.print(newID);
+    Serial2.print(" 01 ");
+    if (number_of_tags < 10) {
+      Serial.println("0" + number_of_tags);
+    } else {
+      Serial.println(number_of_tags);
+    }
+  }
+  //1.4 set [tag.communication attempts] to 0
+  //Is it possible/likely for us to recieve transmissions that arent *DNOs or *RRNs?
+  all_tags[getTag(reading.substring(5, 16))].communication_attempts = 0;
+//-------------------------------------------------------------------
+  
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
   Serial.print("Sleep Duration: ");
   Serial.println(min_cool);
