@@ -42,7 +42,7 @@ By: Matthew Shryock, Jacob Karl
 #define ANALOGAUX5 A12
 
 struct Tag {
-  String ID; //the unique ID of this tag
+  String ID; //the unique ID of this tag (12 bytes long)
   float distance = -1; //the distance of the tag from the boundary when we ranged it last in cmd. Initialized to -1 to prevent us from warning a tag that just entered the network.
   int cooldown_timestamp = 0; //the next time we know the tag will be awake. In mS ahead of current time (also in mS). i.e. if current time is 5000mS and we know that the tag will be awake in 2000mS this variable will be 7000mS.
   int encryption_key[32]; //this tags unique encryption_key. One of the 32 encryption keys from the encryption_key_table.

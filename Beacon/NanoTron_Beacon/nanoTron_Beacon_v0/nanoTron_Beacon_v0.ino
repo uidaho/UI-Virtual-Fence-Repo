@@ -29,6 +29,24 @@ void setup() {
   Serial2.println("EDNI 1");
   //1.0 Initialize Transmission Recieved interupt
   attachInterrupt(digitalPinToInterrupt(LED1), txRecieve, RISING);
+
+  //Create tag objects
+  Tag tag1;
+  tag1.ID = "100000000001";
+  walshRow(1, 32, tag1);
+  all_tags[0] = tag1;
+
+  Tag tag2;
+  tag2.ID = "100000000002";
+  walshRow(2, 32, tag2);
+  all_tags[1] = tag2;
+
+  Tag tag3;
+  tag3.ID = "100000000003";
+  walshRow(3, 32, tag3);
+  all_tags[2] = tag3;
+
+  
 }
 
 void loop() {
@@ -65,14 +83,14 @@ void loop() {
     all_tags[indexes_of_all_cool_tags[i]].communication_attempts++;
     dataLog = dataLog + all_tags[indexes_of_all_cool_tags[i]].ID;
     //0.5 if [tag.communication attempts] > [max communication attempts]
-    if (all_tags[indexes_of_all_cool_tags[i]].communication_attempts > max_communication_attempts) {
+    /*if (all_tags[indexes_of_all_cool_tags[i]].communication_attempts > max_communication_attempts) {
       //0.5.1 remove [tag] from [all tags] and go to 0.8
       //Actually queue tags to be removed from the master list. Removing them now will mess up the rest of the loops.
       indexes_of_all_removed_tags[i] = indexes_of_all_cool_tags[i];
       dataLog = dataLog + ":" + all_tags[indexes_of_all_cool_tags[i]].distance + ": Tag Removed, ";
-    }
+    }*/
     //0.6 if [tag.distance]<=[boundary]&&[tag.distance]>0
-    else if (all_tags[indexes_of_all_cool_tags[i]].distance <= boundary && all_tags[indexes_of_all_cool_tags[i]].distance > 0) {
+    if (all_tags[indexes_of_all_cool_tags[i]].distance <= boundary && all_tags[indexes_of_all_cool_tags[i]].distance > 0) {
       //0.6.1 {encode and queue} warning message
       encodeAndQueue(all_tags[indexes_of_all_cool_tags[i]].encryption_key, warning_message);
       //0.6.2 set [tag.warning flag] true and go to 0.8
@@ -119,12 +137,11 @@ void loop() {
 
     digitalWrite(FLASHCS, HIGH); // Turn OFF Flash
 
-  }
-  else {
+    }
+    else {
     Serial.print("Memory full");
-  }*/
+    }*/
   dataLog = ""; // clear dataLog
-  Serial.println("here");
   //0.10 broadcast [Message] & 0.11 clear [Message]
   Serial.print("Broadcasting: ");
   Serial2.print("BDAT 0 40 ");
@@ -136,18 +153,18 @@ void loop() {
   }
   Serial2.println();
   Serial.println();
-  
-  if (Serial2.available())
+
+  /*if (Serial2.available())
   {
-    while(Serial2.available())
+    while (Serial2.available())
     {
       Serial.write(Serial2.read());
       delay(1);//stops messages from getting sliced.
     }
     Serial.println();
-  }
+  }*/
   //0.11&1/2 remove tags specified in 0.5.1
-  Tag newAllTags[32];
+  /*Tag newAllTags[32];
   int removedTagItter = 0;
   for (int i = 0; i < 32; i++) {
     if (i == indexes_of_all_removed_tags[removedTagItter]) {
@@ -158,15 +175,15 @@ void loop() {
       newAllTags[i - removedTagItter] = all_tags[i];
     }
   }
-  Serial.println("Disconected Tags Removed");
+  Serial.println("Disconected Tags Removed");*/
   int min_cool = 500;
   for (int i = 0; i <= number_of_tags; i++) {
-    all_tags[i] = newAllTags[i];
+    //all_tags[i] = newAllTags[i];
     if (all_tags[i].cooldown_timestamp < min_cool && all_tags[i].cooldown_timestamp > -1) {
       min_cool = all_tags[i].cooldown_timestamp;
     }
   }
-//-------------------------------------------------------------------
+  //-------------------------------------------------------------------
 
   //1.1 read transmission
   char c;
@@ -203,8 +220,8 @@ void loop() {
   //1.4 set [tag.communication attempts] to 0
   //Is it possible/likely for us to recieve transmissions that arent *DNOs or *RRNs?
   all_tags[getTag(reading.substring(5, 16))].communication_attempts = 0;
-//-------------------------------------------------------------------
-  
+  //-------------------------------------------------------------------
+
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
   Serial.print("Sleep Duration: ");
   Serial.println(min_cool);

@@ -37,7 +37,7 @@ By: Andrew Carefoot, Jacob Karl
 #define TAGBAUD 115200
 
 int warnings = 0; //the controling component of tag mechanics. Our behavior changes depending on how manny of these we have.
-bool on_network = false; //control variable that detemines whether or not we perform ranging or searching
+bool on_network = true; //control variable that detemines whether or not we perform ranging or searching
 int sleep_time = 490; //how long we sleep for in mS
 int encryption_key[32]; //the 32-bit encryption key we use to decode messages. Empty by default, set when we recieve an encryption message
 int transmission_decay = 0; //counts the number of times we listen for a message but don't recieve one. Once we reach a threshold set on_network to false
