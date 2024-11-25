@@ -9,9 +9,11 @@ void setup() {
   digitalWrite(SHOCK, LOW);
   pinMode(BUZZER, OUTPUT);
   digitalWrite(BUZZER, LOW);
+  pinMode(NANOENABLE, OUTPUT);
+  digitalWrite(NANOENABLE, HIGH);
 
-  Serial.begin(115200);
-  Serial2.begin(115200);
+  Serial.begin(TAGBAUD);
+  Serial2.begin(NANOBAUD);
   Serial2.println("EDAN 1");
   delay(1);
   Serial2.println("EDNI 1");
@@ -35,22 +37,26 @@ void loop() {
     Serial.println(message);
     //2.2.2 if recieved message within [Timeout]
     if (message != "") {
+      Serial.println("Message Recieved");
       //2.2.2.1 Decrypt message & set [Transmission Decay] to 0
       String messageActual = decrypt(message);
       //2.2.2.2 if message for us (Because CDMA broadcasts messages to all tags we can recieve a message with no content in it for us. Decoding a message like this should result in an empty message.)
-      if (messageActual != "00000000") { //this is what a message with no content looks like
+      if (messageActual != "0000") { //this is what a message with no content looks like
         //2.2.2.2.1 set [Sleep Time] based on message
-        if (messageActual.substring(0, 3) == "1001") {
+        if (messageActual.substring(0, 1) == "00") {
           sleep_time = 2000;
         }
-        else if (messageActual.substring(0, 3) == "1010") {
+        else if (messageActual.substring(0, 1) == "01") {
           sleep_time = 4000;
         }
-        else if (messageActual.substring(0, 3) == "1100") {
+        else if (messageActual.substring(0, 1) == "10") {
           sleep_time = 6000;
         }
+        else if (messageActual.substring(0, 1) == "11"){
+          sleep_time = 10000;
+        }
         //2.2.2.2.2 if message is warning
-        if (messageActual.substring(4, 7) == "1111") {
+        if (messageActual.substring(2, 3) == "11") {
           //2.2.2.2.2.1 Increment [warnings] by 1
           warnings++;
           //2.2.2.2.2.2 if [warnings] >= 1 && [warnings <= 10]
@@ -67,7 +73,7 @@ void loop() {
           //2.2.2.2.2.3 go to 2.5
         }
         //2.2.2.2.3 if message is reset
-        else if (messageActual.substring(4, 7) == "1000") {
+        else if (messageActual.substring(2, 3) == "10") {
           //2.2.2.3.1 set [warnings] to 0
           warnings = 0;
         }
@@ -78,11 +84,12 @@ void loop() {
     else {
       //2.2.3 Increment [Transmission Decay] by 1
       transmission_decay++;
+      Serial.println(transmission_decay);
       //2.2.4 if [Transmission Decay] > 10
-      if (transmission_decay > 10) {
+      /*if (transmission_decay > 10) {
         //2.2.4.1 set [On Network] false
         on_network = false;
-      }
+      }*/
     }
     //2.2.5 go to 2.5
   }
@@ -115,24 +122,47 @@ void loop() {
       }*/
   }
   //2.5 Sleep for [sleep time]
-  Sleep(sleep_time);
+  //Sleep(sleep_time);
 }
 
-String radioListen() {
+String radioListen(){
+  int timeout = 0;
+  int buff = 0;
+  String nanoRead = "";
+  while(!Serial2.available()&&timeout<10)  {
+    Serial.print(timeout);
+    timeout++;
+    delay(1);
+  }
+  if (Serial2.available()){       
+    while(Serial2.available() && buff <= 256){
+      Serial.write(Serial2.read());
+      nanoRead = nanoRead+Serial2.read();
+      delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
+      buff++;
+    }
+    Serial.println();
+  }
+  return nanoRead;
+}
+
+
+/*String radioListen() {
   char c;
   String reading = "";
   int listenStart = millis();
-  while (Serial2.available()) {
-    c = Serial2.read();
-    Serial.print(c);
-    reading += c;
+  int buff = 0;
+  while (Serial2.available() || buff <= 256) {
+    Serial.write(Serial2.read());
+    reading += char(Serial2.read());
     delay(1);
     if (c == '\n') {
       return reading;
     }
+    buff ++;
   }
   return reading;
-}
+}*/
 
 String decrypt(String message) {
   int messageInt[128];
