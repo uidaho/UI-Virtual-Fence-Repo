@@ -40,6 +40,7 @@ void loop() {
       Serial.println("Message Recieved");
       //2.2.2.1 Decrypt message & set [Transmission Decay] to 0
       String messageActual = decrypt(message);
+      Serial.println(messageActual);
       //2.2.2.2 if message for us (Because CDMA broadcasts messages to all tags we can recieve a message with no content in it for us. Decoding a message like this should result in an empty message.)
       if (messageActual != "0000") { //this is what a message with no content looks like
         //2.2.2.2.1 set [Sleep Time] based on message
@@ -167,19 +168,19 @@ String radioListen(){
 String decrypt(String message) {
   int messageInt[128];
   int patternedMessage[128];
-  int decodedMessage[8];
+  int decodedMessage[4];
   for (int i = 0; i < message.length(); i++) {
     messageInt[i] = message.charAt(i) - '0'; // the (- '0') is supposed to convert a character to an integer
   }
   int keyItter = 0;
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < 128; i++) {
     if (keyItter >= 32) {
       keyItter = 0;
     }
     patternedMessage[i] = messageInt[i] * encryption_key[keyItter];
     keyItter++;
   }
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 4; i++) {
     int messageChunk = 0;
     for (int j = 0; j < 32; j++) {
       messageChunk = messageChunk + patternedMessage[(i * 32) + j];
@@ -187,7 +188,7 @@ String decrypt(String message) {
     decodedMessage[i] = messageChunk;
   }
   String messageFinal = "";
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 4; i++) {
     if (decodedMessage[i] > 0) {
       messageFinal = messageFinal + "1";
     }
