@@ -29,6 +29,24 @@ void setup() {
   Serial2.println("EDNI 1");
   //1.0 Initialize Transmission Recieved interupt
   attachInterrupt(digitalPinToInterrupt(LED1), txRecieve, RISING);
+
+  //Create tag objects
+  Tag tag1;
+  tag1.ID = "100000000001";
+  walshRow(1, 32, tag1);
+  all_tags[0] = tag1;
+
+  Tag tag2;
+  tag2.ID = "100000000002";
+  walshRow(2, 32, tag2);
+  all_tags[1] = tag2;
+
+  Tag tag3;
+  tag3.ID = "100000000003";
+  walshRow(3, 32, tag3);
+  all_tags[2] = tag3;
+
+  
 }
 
 void loop() {
@@ -125,16 +143,16 @@ void loop() {
     }*/
   dataLog = ""; // clear dataLog
   //0.10 broadcast [Message] & 0.11 clear [Message]
-  Serial.print("Broadcasting: ");
+  //Serial.print("Broadcasting: ");
   Serial2.print("BDAT 0 40 ");
-  Serial.print("BDAT 0 40 ");
+  //Serial.print("BDAT 0 40 ");
   for (int i = 0; i < 128; i++) {
     Serial2.print(message[i]);
-    Serial.print(message[i]);
+    //Serial.print(message[i]);
     message[i] = 0;
   }
   Serial2.println();
-  Serial.println();
+  //Serial.println();
 
   /*if (Serial2.available())
   {
@@ -176,8 +194,9 @@ void loop() {
   }
   Serial.println(reading);
   //1.2 if transmission is a ranging result
-  if (reading.substring(0, 3) == "*RRN") {
+  if (reading.substring(0, 4) == "*RRN") {
     //1.2.1 update [tag.distance] for relavant [tag] and go to 1.4
+    Serial.println(reading.substring(5,16));
     all_tags[getTag(reading.substring(5, 16))].distance = reading.substring(33, 38).toInt();
   }
   //1.3 if transmission is a new tag message
@@ -194,9 +213,9 @@ void loop() {
     Serial2.print(newID);
     Serial2.print(" 01 ");
     if (number_of_tags < 10) {
-      Serial.println("0" + number_of_tags);
+      Serial2.println("0" + number_of_tags);
     } else {
-      Serial.println(number_of_tags);
+      Serial2.println(number_of_tags);
     }
   }
   //1.4 set [tag.communication attempts] to 0
@@ -205,8 +224,8 @@ void loop() {
   //-------------------------------------------------------------------
 
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
-  Serial.print("Sleep Duration: ");
-  Serial.println(min_cool);
+  //Serial.print("Sleep Duration: ");
+  //Serial.println(min_cool);
   Sleep(min_cool);
 }
 
