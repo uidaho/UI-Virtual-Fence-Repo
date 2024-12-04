@@ -46,7 +46,7 @@ void setup() {
   walshRow(3, 32, tag3);
   all_tags[2] = tag3;
 
-  
+
 }
 
 void loop() {
@@ -88,7 +88,7 @@ void loop() {
       //Actually queue tags to be removed from the master list. Removing them now will mess up the rest of the loops.
       indexes_of_all_removed_tags[i] = indexes_of_all_cool_tags[i];
       dataLog = dataLog + ":" + all_tags[indexes_of_all_cool_tags[i]].distance + ": Tag Removed, ";
-    }*/
+      }*/
     //0.6 if [tag.distance]<=[boundary]&&[tag.distance]>0
     if (all_tags[indexes_of_all_cool_tags[i]].distance <= boundary && all_tags[indexes_of_all_cool_tags[i]].distance > 0) {
       //0.6.1 {encode and queue} warning message
@@ -143,30 +143,34 @@ void loop() {
     }*/
   dataLog = ""; // clear dataLog
   //0.10 broadcast [Message] & 0.11 clear [Message]
-  //Serial.print("Broadcasting: ");
-  Serial2.print("BDAT 0 40 ");
-  //Serial.print("BDAT 0 40 ");
-  for (int i = 0; i < 128; i++) {
-    Serial2.print(message[i]);
-    //Serial.print(message[i]);
-    message[i] = 0;
+  if (haveMessage == true) {
+    haveMessage = false;
+    
+    Serial.print("Broadcasting");
+    Serial2.print("BDAT 0 40 ");
+    //Serial.print("BDAT 0 40 ");
+    for (int i = 0; i < 128; i++) {
+      Serial2.print(message[i]);
+      //Serial.print(message[i]);
+      message[i] = 0;
+    }
+    Serial2.println();
+    //Serial.println();
   }
-  Serial2.println();
-  //Serial.println();
 
   /*if (Serial2.available())
-  {
+    {
     while (Serial2.available())
     {
       Serial.write(Serial2.read());
       delay(1);//stops messages from getting sliced.
     }
     Serial.println();
-  }*/
+    }*/
   //0.11&1/2 remove tags specified in 0.5.1
   /*Tag newAllTags[32];
-  int removedTagItter = 0;
-  for (int i = 0; i < 32; i++) {
+    int removedTagItter = 0;
+    for (int i = 0; i < 32; i++) {
     if (i == indexes_of_all_removed_tags[removedTagItter]) {
       removedTagItter++;
       number_of_tags--;
@@ -174,8 +178,8 @@ void loop() {
     else {
       newAllTags[i - removedTagItter] = all_tags[i];
     }
-  }
-  Serial.println("Disconected Tags Removed");*/
+    }
+    Serial.println("Disconected Tags Removed");*/
   int min_cool = 500;
   for (int i = 0; i <= number_of_tags; i++) {
     //all_tags[i] = newAllTags[i];
@@ -190,14 +194,16 @@ void loop() {
   String reading = "";
   while (Serial2.available()) {
     c = Serial2.read();
+    delay(1);
     reading += c;
   }
-  Serial.println(reading);
+  if (reading != "") {
+    Serial.println(reading);
+  }
   //1.2 if transmission is a ranging result
   if (reading.substring(0, 4) == "*RRN") {
     //1.2.1 update [tag.distance] for relavant [tag] and go to 1.4
-    Serial.println(reading.substring(5,16));
-    all_tags[getTag(reading.substring(5, 16))].distance = reading.substring(33, 38).toInt();
+    all_tags[getTag(reading.substring(5, 17))].distance = reading.substring(33, 39).toInt();
   }
   //1.3 if transmission is a new tag message
   else if (reading.substring(0, 3) == "*DNO") {
@@ -220,7 +226,7 @@ void loop() {
   }
   //1.4 set [tag.communication attempts] to 0
   //Is it possible/likely for us to recieve transmissions that arent *DNOs or *RRNs?
-  all_tags[getTag(reading.substring(5, 16))].communication_attempts = 0;
+  all_tags[getTag(reading.substring(5, 17))].communication_attempts = 0;
   //-------------------------------------------------------------------
 
   //0.12 Sleep until atleast one [tag] will have [tag.cooldown timestamp] <=0
@@ -269,23 +275,24 @@ void txRecieve() {
 }
 
 //This is the function that CDMA encodes messages and adds them to the global [message].
-void encodeAndQueue(int key[32], int new_message[8]) {
+void encodeAndQueue(int key[32], int new_message[4]) {
+  haveMessage = true;
   //encode the message (change all the 0's to -1's)
-  int encoded_message[8];
-  for (int i = 0; i < 8; i++) {
+  int encoded_message[4];
+  for (int i = 0; i < 4; i++) {
     encoded_message[i] = 2 * new_message[i] - 1;
   }
 
   //get the kronecker product of the encoded message and the key
-  int kronecker_message[256];
-  for (int i = 0; i < 8; i++) {
+  int kronecker_message[128];
+  for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 32; j++) {
       kronecker_message[(i * 32) + j] = key[j] * encoded_message[i];
     }
   }
 
   //add the kroneckered message to the global message
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < 128; i++) {
     message[i] = message[i] + kronecker_message[i];
   }
 

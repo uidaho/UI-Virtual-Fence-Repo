@@ -68,3 +68,5 @@ int number_of_tags = 0; //How many tags are on the network. Also serves as an in
 
 String dataLog = ""; //The contents of this get written to long-term memory at the end of the major loop.
 int last_address = 0;
+
+bool haveMessage = false; //Control variable for broadcasting a message. Since we aren't doing auto discovery we don't need to always be broadcasting so off network tags can hear it.
