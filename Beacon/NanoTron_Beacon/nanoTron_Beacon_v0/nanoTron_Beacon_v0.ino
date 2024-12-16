@@ -30,6 +30,30 @@ void setup() {
   //1.0 Initialize Transmission Recieved interupt
   attachInterrupt(digitalPinToInterrupt(LED1), txRecieve, RISING);
 
+  
+  Serial2.println("GNID");
+  Serial.println("GNID");
+  int timeout = 0;
+  while (!Serial2.available() && timeout < 10)
+  {
+    timeout++;
+    delay(1);
+  }
+  if (Serial2.available())
+  {
+    Serial.print("Nanotron communication detected, got:");
+    while (Serial2.available())
+    {
+      Serial.write(Serial2.read());
+      delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
+    }
+    Serial.println();
+  }
+  else
+  {
+    Serial.println("Nanotron communication failed,  timeout");
+  }
+
   //Create tag objects
   Tag tag1;
   tag1.ID = "100000000001";
@@ -46,6 +70,7 @@ void setup() {
   walshRow(3, 32, tag3);
   all_tags[2] = tag3;
 
+  number_of_tags = 3;
 
 }
 
@@ -71,6 +96,7 @@ void loop() {
   //0.2 get [all tags] with cooldown <= present time
   int numberOfCoolTags = 0;
   for (int i = 0; i < number_of_tags; i++) {
+    Serial.println(all_tags[i].cooldown_timestamp);
     if (all_tags[i].cooldown_timestamp < millis()) {
       indexes_of_all_cool_tags[numberOfCoolTags] = i;
       numberOfCoolTags++;
@@ -78,7 +104,7 @@ void loop() {
   }
   dataLog = millis() + ":";
   //0.3 for [tag] in [all cool tags]
-  for (int i = 0; i < numberOfCoolTags; i++) {
+  for (int i = 0; i < numberOfCoolTags; i++) {s
     //0.4 increase [tag.communication attempts] by 1
     all_tags[indexes_of_all_cool_tags[i]].communication_attempts++;
     dataLog = dataLog + all_tags[indexes_of_all_cool_tags[i]].ID;

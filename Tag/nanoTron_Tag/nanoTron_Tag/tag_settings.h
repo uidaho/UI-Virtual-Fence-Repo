@@ -19,6 +19,12 @@ By: Andrew Carefoot, Jacob Karl
 #define NANOUSARTTX 16  //serial communication to nanotron
 #define NANOENABLE 2
 
+#define RELAYIN1 18//defined as input in beaconinit
+#define RELAYIN2 19//defined as input in beaconinit
+
+#define RELAYOUT1 14//defined as output in beaconinit
+#define RELAYOUT2 15//defined as output in beaconinit
+
 //ftdi hardware serial comms
 #define FTDIRX 0  //recieving from ftdi comms
 #define FTDITX 1  //sending to ftdi

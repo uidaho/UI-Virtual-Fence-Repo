@@ -9,22 +9,60 @@ void setup() {
   digitalWrite(SHOCK, LOW);
   pinMode(BUZZER, OUTPUT);
   digitalWrite(BUZZER, LOW);
+
+  /*pinMode(RELAYIN1, INPUT);
+  pinMode(RELAYIN2, INPUT);
+
+  pinMode(RELAYOUT1, OUTPUT);
+  pinMode(RELAYOUT2, OUTPUT);
+
   pinMode(NANOENABLE, OUTPUT);
   digitalWrite(NANOENABLE, HIGH);
 
+  digitalWrite(RELAYOUT1, LOW);
+  digitalWrite(RELAYOUT2, LOW);*/
+
+  pinMode(NANOUSARTTX, INPUT);
+
   Serial.begin(TAGBAUD);
   Serial2.begin(NANOBAUD);
-  Serial2.println("EDAN 1");
-  delay(1);
-  Serial2.println("EDNI 1");
-  Serial2.println("EBID 1");
 
+  Serial.println("Tag Begin");
   //Set self settings
   //To change the ID of a tag change the last characters of the snid, and
   //change the first argument of walshRow to match.
   Serial2.println("SNID 100000000001");
+  Serial.println("SNID 100000000001");
   walshRow(1, 32);
 
+  Serial2.println("GNID");
+  Serial.println("GNID");
+  int timeout = 0;
+  while (!Serial2.available() && timeout < 10)
+  {
+    timeout++;
+    delay(1);
+  }
+  if (Serial2.available())
+  {
+    Serial.print("Nanotron communication detected, got:");
+    while (Serial2.available())
+    {
+      Serial.write(Serial2.read());
+      delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
+    }
+    Serial.println();
+  }
+  else
+  {
+    Serial.println("Nanotron communication failed,  timeout");
+  }
+  
+  Serial2.println("EDAN 1");
+  delay(1);
+  Serial2.println("EDNI 1");
+  Serial2.println("EBID 1");
+  Serial.println("Setup Done");
 }
 
 void loop() {
@@ -53,7 +91,7 @@ void loop() {
         else if (messageActual.substring(0, 1) == "10") {
           sleep_time = 6000;
         }
-        else if (messageActual.substring(0, 1) == "11"){
+        else if (messageActual.substring(0, 1) == "11") {
           sleep_time = 10000;
         }
         //2.2.2.2.2 if message is warning
@@ -90,7 +128,7 @@ void loop() {
       /*if (transmission_decay > 10) {
         //2.2.4.1 set [On Network] false
         on_network = false;
-      }*/
+        }*/
     }
     //2.2.5 go to 2.5
   }
@@ -126,19 +164,19 @@ void loop() {
   //Sleep(sleep_time);
 }
 
-String radioListen(){
+String radioListen() {
   int timeout = 0;
   int buff = 0;
   String nanoRead = "";
-  while(!Serial2.available()&&timeout<10)  {
+  while (!Serial2.available() && timeout < 10)  {
     Serial.print(timeout);
     timeout++;
     delay(1);
   }
-  if (Serial2.available()){       
-    while(Serial2.available() && buff <= 256){
+  if (Serial2.available()) {
+    while (Serial2.available() && buff <= 256) {
       Serial.write(Serial2.read());
-      nanoRead = nanoRead+Serial2.read();
+      nanoRead = nanoRead + Serial2.read();
       delay(1);  //a small delay helps the entire message come through before moving on. Otherwise messages got cut in half
       buff++;
     }
@@ -163,7 +201,7 @@ String radioListen(){
     buff ++;
   }
   return reading;
-}*/
+  }*/
 
 String decrypt(String message) {
   int messageInt[128];
