@@ -19,12 +19,17 @@ To install on a linux PC:
 - install visual studio
 - install the platform io plug in inside visual studio
 
+To install on a windows PC:
+- install python 3.6 or later
+- install visual studio
+- install the platform io plug in inside visual studio
+
 From there you'll be able to navigate to the platform io build menu, then in the options select the one that corresponds to your microcontroller, desired functionality, and the beacon or tag. You can determin what microcontroller you have based on the version listed on the board:
 
 **328p based boards:**
 - Tag versions 1-3
 
-**2580 based boards:**
+**2560 based boards:**
 - Beacon versions 3 and 4
 
 **Optional Functions:**
