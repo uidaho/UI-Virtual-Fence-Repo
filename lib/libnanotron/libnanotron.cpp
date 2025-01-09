@@ -2,21 +2,19 @@
 libnanotron
 Library to wrap nanotron functionality.
 
+Author: Mat Shryock, Andrew Carefoot
 */
 #include "libnanotron.hpp"
 
 
-nanotron::nanotron(){
-    ///Constructor for the nanobeacon using its default ID.
-    ID = read_my_radio_id();
-    uid=ID;
-    return;
-}
+nanotron::nanotron(Stream& serialObj) 
+    : serial_port(&serialObj), self_id(read_my_radio_id()) {}
 
-nanotron::nanotron(String selfid){
+nanotron::nanotron(String selfid,Stream& serialObj){
     ///Constructor for the nanobeacon if setting a new ID.
     uid=selfid;
-    ID = read_my_radio_id();
+    self_id = read_my_radio_id();
+    serial_port = &serialObj;
     return;
 }
 
@@ -27,10 +25,10 @@ int nanotron::range(String tag_id){
   String ranging = "rato 0 ";
   ranging += tag_id;
   String reading = "";
-  Serial2.println(ranging);
+  serial_port->println(ranging);
   //TODO: does this fail if serial is not available?
-  while (Serial2.available() > 0){ 
-     char c = Serial2.read();
+  while (serial_port->available() > 0){ 
+     char c = serial_port->read();
      reading += c;
   }
   String buff = "";
@@ -44,11 +42,11 @@ int nanotron::range(String tag_id){
 /// @brief Gets node voltage from nanotron ADC and processes into a double per nanotron documentation.
 /// @return a double representing node voltage.
 double nanotron::read_my_input_voltage(){
-  Serial2.println("GBAT");
+  serial_port->println("GBAT");
   String reading="";
   //TODO: does this fail if serial is not available?
-  while (Serial2.available() > 0){ 
-     char c = Serial2.read();
+  while (serial_port->available() > 0){ 
+     char c = serial_port->read();
      reading += c;
   }
   //TODO: double check that this unsigned int gets processed properly
@@ -58,12 +56,13 @@ double nanotron::read_my_input_voltage(){
 
 }
 
+
 double nanotron::read_other_input_voltage(String OtherID){
   String output = "rato 0 " + OtherID;
   String value;
-  Serial2.println(output);
-  while(Serial2.available()){
-      value += Serial2.read();
+  serial_port->println(output);
+  while(serial_port->available()){
+      value += serial_port->read();
   }
   String temporary = value.substring(3,9);
 
@@ -71,15 +70,15 @@ double nanotron::read_other_input_voltage(String OtherID){
 
 }
 
+/// @brief Asks nanotron module for its ID
+/// @return a string with the ID stored
 String nanotron::read_my_radio_id(){
-  int query = 0;
   String value = "";
-  Serial2.println("gnid");
-    while(Serial2.available()){
-        value +=  Serial2.read();
+  serial_port->println("gnid");
+    while(serial_port->available()){
+        value +=  serial_port->read();
     }
-    ID = value;
-    return ID;
+  return value;
 }
 
 

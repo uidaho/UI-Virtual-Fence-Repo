@@ -19,8 +19,8 @@ class nanotron
 {
 
 public:
-    nanotron();
-    nanotron(String);
+    nanotron(Stream& serialObj) 
+        : serial_port(&serialObj), self_id(read_my_radio_id()) {}
     int getsettingself(int);
     String getsettingself();
     bool setsettingself(int, String);
@@ -31,9 +31,10 @@ public:
 	double read_other_input_voltage(String OtherID);
 	
 private:
-    String ID;
+    String self_id;
     String uid;
     hardwaretype hardware;
+    Stream* serial_port;
 
     
 };
